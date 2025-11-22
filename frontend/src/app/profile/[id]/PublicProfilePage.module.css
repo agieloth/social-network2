@@ -1,0 +1,192 @@
+.main {
+  min-height: 100vh;
+  background: black;
+  color: #f3f4f6;
+  padding: 1.5rem 1rem;
+}
+
+.backButton {
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #60a5fa;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.backButton:hover {
+  color: #93c5fd;
+}
+
+.profileContainer {
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.profileTitle {
+  font-size: 1.875rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #3b82f6;
+}
+
+.profileCard {
+  background: #111827;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  border: 1px solid #374151;
+}
+
+.avatar {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 9999px;
+  border: 2px solid #3b82f6;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
+.label {
+  color: #60a5fa;
+}
+
+.followSection {
+  margin-top: 1rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  background: #1f2937;
+  color: #d1d5db;
+}
+
+.activeTab {
+  background: #3b82f6;
+  color: white;
+}
+
+.subText {
+  color: #9ca3af;
+}
+
+.postList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.postCard {
+  background: #1f2937;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #374151;
+}
+
+.postDate {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin-bottom: 0.5rem;
+}
+
+.postContent {
+  color: #f9fafb;
+  margin-bottom: 0.75rem;
+  white-space: pre-wrap;
+}
+
+.postImage {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid #374151;
+}
+
+.userList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.userCard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #1f2937;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #374151;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.userCard:hover {
+  background: #374151;
+}
+
+.userAvatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  object-fit: cover;
+}
+
+.userName {
+  color: white;
+  font-weight: 500;
+}
+
+.userNickname {
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.followBtn {
+  padding: 0.5rem 1rem;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.followBtn:hover {
+  background: #1d4ed8;
+}
+
+.unfollowBtn {
+  padding: 0.5rem 1rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.unfollowBtn:hover {
+  background: #b91c1c;
+}
+
+.pendingBtn {
+  padding: 0.5rem 1rem;
+  background: #ca8a04;
+  color: white;
+  border-radius: 0.5rem;
+  opacity: 0.75;
+}
+
+.error {
+  color: #dc2626;
+}
+
+.loading {
+  color: #9ca3af;
+}

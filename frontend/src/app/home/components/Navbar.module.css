@@ -1,0 +1,372 @@
+/* General Navbar */
+.nav {
+  background-color: #1a202c;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #2d3748;
+  position: relative;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Search Bar */
+.searchContainer {
+  max-width: 39rem;
+  width: 60%;
+  position: relative;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background-color: #2d3748;
+  border: 1px solid #4a5568;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #f7fafc;
+}
+
+.searchInput::placeholder {
+    color: #a0aec0;
+}
+
+.searchInput:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+}
+
+.searchResults {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background-color: #2d3748;
+  margin-top: 0.5rem;
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 30;
+  border: 1px solid #4a5568;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.searchResultItem {
+  padding: 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #4a5568;
+}
+
+.searchResultItem:hover {
+  background-color: #4a5568;
+}
+
+.searchResultName {
+  font-weight: 500;
+  color: #fff;
+}
+
+.searchResultNickname {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #a0aec0;
+}
+
+/* Right side actions */
+.actionsContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: 1rem;
+  position: relative;
+}
+
+.actionButton {
+  position: relative;
+}
+
+.actionIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Notifications */
+.notificationsContainer {
+  position: relative;
+}
+
+.notificationButton {
+  position: relative;
+  padding: 0.25rem;
+}
+
+.notificationCount {
+  position: absolute;
+  top: -0.25rem;
+  left: -0.25rem;
+  background-color: #ef4444;
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  border-radius: 9999px;
+  height: 1rem;
+  width: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notificationsDropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 0.5rem;
+  width: 20rem;
+  background-color: #1a202c;
+  border: 1px solid #4a5568;
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  z-index: 50;
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+.notificationsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.notificationsTitle {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.notificationsCloseButton {
+  color: #a0aec0;
+}
+
+.notificationsCloseButton:hover {
+  color: #fff;
+}
+
+.noNotifications {
+  color: #a0aec0;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  padding: 0.5rem 0;
+}
+
+.notificationsList {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
+}
+
+.notificationItem {
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  border-width: 1px;
+}
+
+.notificationSeen {
+  background-color: #2d3748;
+  border-color: #4a5568;
+}
+
+.notificationUnseen {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.notificationText {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #fff;
+  word-break: break-word;
+}
+
+.notificationDate {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: #a0aec0;
+  margin-top: 0.25rem;
+}
+
+.notificationActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.notificationActionButton {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.acceptButton {
+  background-color: #16a34a;
+}
+
+.acceptButton:hover {
+  background-color: #15803d;
+}
+
+.rejectButton {
+  background-color: #dc2626;
+}
+
+.rejectButton:hover {
+  background-color: #b91c1c;
+}
+
+/* Groups Link */
+.groupsLink {
+  color: #d1d5db;
+}
+
+.groupsLink:hover {
+  color: #fff;
+}
+
+/* Profile Dropdown */
+.profileContainer {
+  position: relative;
+}
+
+.profileAvatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  border: 1px solid #2563eb;
+  cursor: pointer;
+}
+
+.profileDropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 0.5rem;
+  width: 16rem;
+  background-color: #1a202c;
+  border: 1px solid #4a5568;
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  z-index: 20;
+}
+
+.profileName {
+  font-weight: 600;
+  color: #fff;
+}
+
+.profileEmail {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #60a5fa;
+  margin-top: 0.25rem;
+}
+
+.privacyContainer {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.privacyText {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #d1d5db;
+}
+
+.privacyToggle {
+  width: 3rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.25rem;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.privacyTogglePrivate {
+  background-color: #ef4444;
+}
+
+.privacyTogglePublic {
+  background-color: #22c55e;
+}
+
+.privacyToggleIndicator {
+  background-color: #fff;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transform: translateX(0);
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.privacyToggleIndicatorPrivate {
+  transform: translateX(1.5rem);
+}
+
+.profileButton {
+  margin-top: 0.75rem;
+  width: 100%;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.profileButton:hover {
+  text-decoration: underline;
+}
+
+.viewProfileButton {
+  color: #22c55e;
+}
+
+.logoutButton {
+  color: #ef4444;
+}
+
+/* Post Form Modal */
+.postFormModalOverlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.homeLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.homeLink:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}

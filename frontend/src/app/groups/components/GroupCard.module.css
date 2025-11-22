@@ -1,0 +1,93 @@
+.card {
+  background-color: #1f2937; /* gray-800 */
+  border-radius: 0.75rem; /* rounded-xl */
+  padding: 1rem; /* p-4 */
+  border: 1px solid #374151; /* border-gray-700 */
+  transition: border-color 0.3s ease;
+  cursor: default;
+}
+
+.card:hover {
+  border-color: #4b5563; /* border-gray-600 */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem; /* mb-2 */
+}
+
+.title {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600; /* font-semibold */
+  color: white;
+  margin: 0;
+}
+
+.adminBadge {
+  font-size: 0.75rem; /* text-xs */
+  background-color: #7c3aed; /* purple-600 */
+  color: white;
+  padding: 0.25rem 0.5rem; /* px-2 py-1 */
+  border-radius: 0.375rem; /* rounded */
+}
+
+.description {
+  color: #9ca3af; /* gray-400 */
+  font-size: 0.875rem; /* text-sm */
+  margin-bottom: 1rem; /* mb-4 */
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.meta {
+  font-size: 0.75rem; /* text-xs */
+  color: #6b7280; /* gray-500 */
+  display: flex;
+  align-items: center;
+}
+
+.separator {
+  margin: 0 0.5rem; /* mx-2 */
+}
+
+.joinBtn,
+.visitBtn {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem; /* px-3 py-1 */
+  border-radius: 0.375rem;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.joinBtn {
+  background-color: #2563eb; /* blue-600 */
+}
+
+.joinBtn:hover {
+  background-color: #1d4ed8; /* blue-700 */
+}
+
+.visitBtn {
+  background-color: #16a34a; /* green-600 */
+}
+
+.visitBtn:hover {
+  background-color: #15803d; /* green-700 */
+}
+
+.pendingBadge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  background-color: #ca8a04; /* yellow-600 */
+  color: white;
+  user-select: none;
+}

@@ -1,0 +1,81 @@
+.post {
+  background-color: #1a202c;
+  border: 1px solid #2d3748;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.authorContainer {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+}
+
+.avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  border: 1px solid #4a5568;
+  margin-right: 0.75rem;
+}
+
+.authorName {
+  font-weight: 500;
+  color: #60a5fa;
+}
+
+.authorName:hover {
+  text-decoration: underline;
+}
+
+.postDate {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #a0aec0;
+}
+
+.postContent {
+  color: #e2e8f0;
+  margin-bottom: 0.5rem;
+}
+
+.postImage {
+  width: 100%;
+  max-width: 28rem;
+  border-radius: 0.25rem;
+  border: 1px solid #4a5568;
+  margin-bottom: 0.5rem;
+}
+
+.actionsContainer {
+  margin-top: 0.5rem;
+}
+
+.toggleCommentsButton {
+  display: flex;
+  align-items: center;
+  color: #60a5fa;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  cursor: pointer;
+}
+
+.toggleCommentsButton:hover {
+  color: #3b82f6;
+}
+
+.commentIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.commentsSection {
+  margin-top: 1rem;
+}

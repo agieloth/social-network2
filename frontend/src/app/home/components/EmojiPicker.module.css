@@ -1,0 +1,88 @@
+.container {
+  position: absolute;
+  bottom: 3rem;
+  left: 0;
+  width: 20rem;
+  background-color: #2d3748;
+  border: 1px solid #4a5568;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 50;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  border-bottom: 1px solid #4a5568;
+}
+
+.title {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.closeButton {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.closeButton:hover {
+  color: #fff;
+}
+
+.tabs {
+  display: flex;
+  padding: 0.5rem;
+  border-bottom: 1px solid #4a5568;
+  background-color: #4a5568;
+}
+
+.tab {
+  padding: 0.25rem;
+  margin: 0 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #d1d5db;
+}
+
+.tab:hover {
+  background-color: #4a5568;
+}
+
+.tabActive {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+.gridContainer {
+  height: 12rem;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.25rem;
+}
+
+.emojiButton {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+.emojiButton:hover {
+  background-color: #4a5568;
+}

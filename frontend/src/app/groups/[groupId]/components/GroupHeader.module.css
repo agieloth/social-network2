@@ -1,0 +1,41 @@
+.headerContainer {
+  background-color: rgba(31, 41, 55, 0.5); /* bg-gray-800/50 */
+  backdrop-filter: blur(10px); /* backdrop-blur-lg */
+  border-radius: 0.75rem; /* rounded-xl */
+  padding: 1.5rem; /* p-6 */
+  margin-bottom: 1.5rem; /* mb-6 */
+  border: 1px solid rgba(55, 65, 81, 0.5); /* border-gray-700/50 */
+}
+
+.title {
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: 700; /* font-bold */
+  color: white;
+  margin-bottom: 0.5rem; /* mb-2 */
+}
+
+.description {
+  color: #d1d5db; /* text-gray-300 */
+  margin-bottom: 1rem; /* mb-4 */
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* space-x-4 */
+  font-size: 0.875rem; /* text-sm */
+  color: #9ca3af; /* text-gray-400 */
+}
+
+.meta span {
+  display: flex;
+  align-items: center;
+}
+
+.adminBadge {
+  background-color: #9333ea; /* bg-purple-600 */
+  color: white;
+  padding: 0.25rem 0.5rem; /* px-2 py-1 */
+  border-radius: 0.25rem; /* rounded */
+  font-size: 0.75rem; /* text-xs */
+}

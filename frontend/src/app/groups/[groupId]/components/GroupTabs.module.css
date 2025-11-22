@@ -1,0 +1,23 @@
+.tabsContainer {
+  display: flex;
+  border-bottom: 1px solid #374151; /* border-gray-700 */
+  margin-bottom: 1.5rem; /* mb-6 */
+}
+
+.tabButton {
+  padding: 0.5rem 1rem; /* px-4 py-2 */
+  color: #9ca3af; /* text-gray-400 */
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.tabButton:hover {
+  color: white;
+}
+
+.tabButton.active {
+  color: #60a5fa; /* text-blue-400 */
+  border-bottom: 2px solid #3b82f6; /* border-b-2 border-blue-500 */
+}

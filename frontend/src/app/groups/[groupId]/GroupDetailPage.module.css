@@ -1,0 +1,116 @@
+/* src/app/groups/GroupDetailPage.module.css */
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #1a202c, #2d3748); /* bg-gradient-to-br from-gray-900 to-gray-800 */
+}
+
+.container {
+  max-width: 64rem; /* max-w-4xl */
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1rem;
+  padding-top: 6rem; /* pt-24 */
+}
+
+.contentSpace {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* space-y-4 */
+}
+
+.requestsContainer {
+  background-color: rgba(45, 55, 72, 0.3); /* bg-gray-800/50 */
+  border-radius: 0.5rem; /* rounded-lg */
+  padding: 1rem;
+  border: 1px solid rgba(55, 65, 81, 0.3); /* border border-gray-700/50 */
+}
+
+/* Loading styles */
+.loadingPage {
+  min-height: 100vh;
+  background-color: #1a202c; /* bg-gray-900 */
+}
+
+.loadingContainer {
+  max-width: 64rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1rem;
+}
+
+.pulseWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.loadingBarShort {
+  height: 2.5rem; /* h-10 */
+  background-color: #2d3748; /* bg-gray-800 */
+  border-radius: 0.375rem;
+  width: 50%; /* w-1/2 */
+}
+
+.loadingBarMedium {
+  height: 1.5rem; /* h-6 */
+  background-color: #2d3748;
+  border-radius: 0.375rem;
+  width: 75%; /* w-3/4 */
+}
+
+.loadingBox {
+  height: 10rem; /* h-40 */
+  background-color: #2d3748;
+  border-radius: 0.375rem;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* Error styles */
+.errorPage {
+  min-height: 100vh;
+  background-color: #1a202c;
+}
+
+.errorContainer {
+  max-width: 64rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1rem;
+  color: #f56565; /* red-500 */
+}
+
+.fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background-color: #4a5568; /* bg-gray-700 */
+  color: white;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px; /* rounded-full */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s;
+}
+
+.fab:hover {
+  background-color: #2d3748; /* bg-gray-800 */
+}
+
+.fabIcon {
+  width: 2rem;
+  height: 2rem;
+}
+

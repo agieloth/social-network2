@@ -1,0 +1,191 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.popup {
+  background-color: rgb(17, 24, 39);
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
+              0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 384px;
+  padding: 1.5rem;
+  position: fixed;
+  border: 1px solid rgb(55, 65, 81);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.closeBtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  color: rgb(156, 163, 175);
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.closeBtn:hover {
+  color: white;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(75, 85, 99);
+  object-fit: cover;
+  margin-bottom: 0.75rem;
+}
+
+.name {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+}
+
+.nickname {
+  color: rgb(156, 163, 175);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  margin: 0;
+}
+
+.about {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: rgb(96, 165, 250);
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.email {
+  color: rgb(156, 163, 175);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.birthday {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: rgb(107, 114, 128);
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.privateText {
+  color: rgb(156, 163, 175);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.followBtn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  width: 8rem;
+  text-align: center;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.followBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.followDefault {
+  background-color: rgb(37, 99, 235);
+  color: white;
+}
+
+.followDefault:hover {
+  background-color: rgb(29, 78, 216);
+}
+
+.unfollow {
+  background-color: rgb(220, 38, 38);
+  color: white;
+}
+
+.unfollow:hover {
+  background-color: rgb(185, 28, 28);
+}
+
+.pending {
+  background-color: rgb(234, 179, 8);
+  color: white;
+}
+
+.pending:hover {
+  background-color: rgb(202, 138, 4);
+}
+
+.cancelPending {
+  background-color: rgb(55, 65, 81);
+  color: white;
+}
+
+.cancelPending:hover {
+  background-color: rgb(31, 41, 55);
+}
+
+.viewProfileBtn {
+  margin-top: 0.75rem;
+  color: rgb(96, 165, 250);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.viewProfileBtn:hover {
+  text-decoration: underline;
+}

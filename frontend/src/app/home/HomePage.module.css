@@ -1,0 +1,190 @@
+.pageContainer {
+  min-height: 100vh;
+  background-color: black;
+  color: #e5e7eb;
+}
+
+.postFormContainer {
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-top: 1.5rem;
+}
+
+.postFormWrapper {
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-top: 1.5rem;
+}
+
+.postsHeading {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.noPosts {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.chatBoxContainer {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 1rem;
+  z-index: 40;
+}
+/* Add these styles to your existing HomePage.module.css */
+
+/* Notification Toast */
+.notificationToast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #333;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+  max-width: 300px;
+}
+
+.messageNotification {
+  background: #007bff;
+  border-left: 4px solid #0056b3;
+}
+
+.notificationContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.closeNotification {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeNotification:hover {
+  opacity: 0.7;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Message Indicator */
+.messageIndicator {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #007bff;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  cursor: pointer;
+  animation: pulse 2s infinite;
+}
+
+.messageIndicator:hover {
+  background: #0056b3;
+}
+
+.unreadBadge {
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 16px rgba(0, 123, 255, 0.6);
+  }
+  100% {
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+  }
+}
+
+/* Chat box unread indicator */
+.chatBoxHeader {
+  position: relative;
+}
+
+.chatUnreadIndicator {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .notificationToast {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+  
+  .messageIndicator {
+    top: 5px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    justify-content: center;
+  }
+}

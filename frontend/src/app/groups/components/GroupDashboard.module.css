@@ -1,0 +1,717 @@
+/* GroupDashboard.module.css */
+.postFormModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.postFormContainer {
+  background: var(--bg-color);
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  position: relative;
+}
+
+.closeFormButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-color);
+}
+.groupDashboardOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.groupDashboardPopup {
+  background-color: #1e1e1e;
+  color: #ffffff;
+  width: 90%;
+  max-width: 700px;
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  animation: fadeIn 0.4s ease-in-out;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.groupHeader {
+  margin-bottom: 2rem;
+}
+
+.groupHeader p {
+  opacity: 0.8;
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: #fff;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.closeButton:hover {
+  color: #ff4d4d;
+}
+
+.tabs {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.tabButton {
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.tabButton:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.tabButton.active {
+  background: linear-gradient(135deg, #007bff, #00c3ff);
+  color: white;
+  font-weight: 600;
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tabContent {
+  color: black;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 1.5rem;
+  border-radius: 12px;
+  overflow-y: auto;
+  max-height: calc(90vh - 200px);
+  flex-grow: 1;
+}
+
+/* Chat styles */
+.chatContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chatMessages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  background: #1e1e1e;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.messageBubble {
+  margin-bottom: 10px;
+  text-align: left;
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #2d2d2d;
+  color: white;
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+.messageBubble.sent {
+  text-align: right;
+  background: #007bff;
+}
+
+.messageSender {
+  font-size: 0.8em;
+  opacity: 0.7;
+}
+
+.messageTime {
+  font-size: 0.7em;
+  opacity: 0.6;
+}
+
+.chatInputArea {
+  display: flex;
+  gap: 10px;
+}
+
+.chatInputArea input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 20px;
+  border: none;
+  background: #2d2d2d;
+  color: white;
+}
+
+.chatInputArea button {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.chatInputArea button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Common styles */
+.errorMessage {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #f5c6cb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.errorMessage button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #721c24;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 2rem;
+}
+
+.emptyState div {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.emptyState p {
+  margin: 0.5rem 0;
+}
+
+.emptyState small {
+  color: #666;
+}
+
+/* Posts styles */
+.postsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-height: 0;
+}
+
+.postForm {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border: 2px solid rgba(0, 123, 255, 0.1);
+  border-radius: 15px;
+  padding: 1.5rem;
+  flex-shrink: 0;
+}
+
+.postForm h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.postTextarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.imageUploadSection {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  border: 2px dashed #ddd;
+}
+
+.imageUploadLabel {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.imageInput {
+  display: none;
+}
+
+.selectedImagePreview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(40, 167, 69, 0.1);
+  border-radius: 8px;
+  color: #28a745;
+}
+
+.removeImage {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.postSubmitButton {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.postSubmitButton:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.postList {
+  overflow-y: auto;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+.postCard {
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.postHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.authorAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.defaultAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #007bff, #00c3ff);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.authorDetails h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.postDate {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.postContent {
+  margin: 1rem 0;
+  line-height: 1.6;
+}
+
+.postContent p {
+  margin: 0;
+  color: #333;
+}
+
+.postImageContainer {
+  margin: 1rem 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.postImage {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: cover;
+  display: block;
+}
+
+.postActions {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.commentToggle {
+  background: rgba(0, 123, 255, 0.1);
+  border: 1px solid rgba(0, 123, 255, 0.2);
+  color: #007bff;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.commentsSection {
+  margin-top: 1rem;
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.comment {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 3px solid #007bff;
+}
+
+.commentAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.defaultCommentAvatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6c757d, #495057);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.commentContent {
+  flex: 1;
+}
+
+.commentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.commentHeader small {
+  color: #666;
+}
+
+.commentForm {
+  display: flex;
+  gap: 10px;
+}
+
+.commentForm input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+}
+
+.commentForm button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.emptyComments {
+  text-align: center;
+  color: #666;
+  padding: 1rem;
+}
+
+/* Events styles */
+.eventsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-height: 0;
+}
+
+.eventForm {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+  border: 2px solid rgba(255, 193, 7, 0.3);
+  border-radius: 15px;
+  padding: 1.5rem;
+  flex-shrink: 0;
+}
+
+.eventForm h3 {
+  margin: 0 0 1rem 0;
+  color: #856404;
+}
+
+.formField {
+  margin-bottom: 1rem;
+}
+
+.formField input,
+.formField textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.formField textarea {
+  resize: vertical;
+}
+
+.eventSubmitButton {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+  color: #212529;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.eventSubmitButton:disabled {
+  background: #6c757d;
+  color: white;
+  cursor: not-allowed;
+}
+
+.eventList {
+  overflow-y: auto;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+.eventCard {
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.eventHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.eventHeader h3 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.eventHeader p {
+  margin: 0 0 0.5rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.eventStatus {
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.eventStatus.upcoming {
+  background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.eventStatus.past {
+  background: linear-gradient(135deg, #6c757d, #adb5bd);
+}
+
+.eventDescription {
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+.eventDate {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+
+.inviteSection {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 1.5rem;
+  border-radius: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.inviteSection h3 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.inviteUser {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  transition: background-color 0.2s ease;
+}
+
+.inviteUser:hover {
+  background-color: #eef6ff;
+}
+
+.inviteUser span {
+  font-size: 1rem;
+  color: #333;
+}
+
+.inviteUser button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.45rem 0.9rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.inviteUser button:hover {
+  background-color: #0056b3;
+}
+
+.groupDashboardOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: #1f2937; /* equivalent to bg-gray-800 */
+  /* add other styles as needed */
+  /* example to fill screen */
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  z-index: 40;
+}
+
+.postFormOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.5); /* bg-black with opacity 50% */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.postFormContainer {
+  background-color: #1f2937; /* bg-gray-800 */
+  border-radius: 0.5rem; /* rounded-lg */
+  padding: 1.5rem; /* p-6 */
+  width: 100%;
+  max-width: 42rem; /* max-w-2xl */
+}
+
+/* You can add more styles for .groupDashboardPopup and others as needed */

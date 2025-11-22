@@ -1,0 +1,3 @@
+social.db
+# Ignore all files in uploads directory except the directory itself
+uploads/*

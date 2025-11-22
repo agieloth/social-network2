@@ -1,0 +1,36 @@
+.statusContainer {
+  border-radius: 0.5rem; /* rounded-lg */
+  padding: 1rem; /* p-4 */
+  margin-bottom: 1.5rem; /* mb-6 */
+}
+
+.joinContainer {
+  background-color: rgba(30, 58, 138, 0.3); /* bg-blue-900/30 */
+  border: 1px solid #1e40af; /* border-blue-700 */
+}
+
+.joinText {
+  color: #93c5fd; /* text-blue-300 */
+}
+
+.joinButton {
+  margin-top: 0.5rem; /* mt-2 */
+  padding: 0.5rem 1rem; /* px-4 py-2 */
+  background-color: #2563eb; /* bg-blue-600 */
+  color: white;
+  border-radius: 0.25rem; /* rounded */
+  transition: background-color 0.2s;
+}
+
+.joinButton:hover {
+  background-color: #1d4ed8; /* hover:bg-blue-700 */
+}
+
+.pendingContainer {
+  background-color: rgba(113, 63, 18, 0.3); /* bg-yellow-900/30 */
+  border: 1px solid #92400e; /* border-yellow-700 */
+}
+
+.pendingText {
+  color: #fcd34d; /* text-yellow-300 */
+}
