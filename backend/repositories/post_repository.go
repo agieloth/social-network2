@@ -209,8 +209,14 @@ func (r *PostRepository) GetPostsForUser(userID int) ([]models.PostFetch, error)
         WHERE p.privacy = 'public' OR p.author_id = ? OR p.id IN (
             SELECT post_id FROM post_permissions WHERE user_id = ?
         )
+            OR (
+                p.privacy = 'followers' 
+                AND p.author_id IN (
+                    SELECT followed_id FROM followers WHERE follower_id = ?
+                )
+            )
         ORDER BY p.created_at DESC
-    `, userID, userID)
+    `, userID, userID, userID)
 
     if err != nil {
         return nil, err

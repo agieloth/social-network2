@@ -83,7 +83,7 @@ const PostForm = forwardRef(function PostForm(
             <div className={styles.noRecipients}>Aucun abonné disponible.</div>
           ) : (
             (recipients || []).map((user) => (
-              <label key={user.id} className={styles.recipientLabel}>
+              <label key={user.ID} className={styles.recipientLabel}>
                 <input
                   type="checkbox"
                   checked={recipientIds.includes(user.ID)}
