@@ -202,7 +202,7 @@ export default function PublicProfilePage() {
 
         {tab === 'following' && (
           <div className={styles.userList}>
-            {following.length === 0 ? (
+            {following === null ? (
               <p className={styles.subText}>Cet utilisateur ne suit personne.</p>
             ) : (
               following.map(user => (

@@ -12,6 +12,7 @@ type Post struct {
 type PostFetch struct {
     ID           int       `json:"id"`
     AuthorID     int       `json:"author_id"`
+	AuthorName   string    `json:"author_name"`
     Content      string    `json:"content"`
     ImageURL     string    `json:"image_url"`
     Privacy      string    `json:"privacy"`

@@ -53,7 +53,8 @@ func (r *PostRepository) GetAllPostsByUserID(userID int) ([]models.PostFetch, er
     rows, err := r.DB.Query(`
         SELECT 
             p.id, p.author_id, p.content, p.image_url, 
-            p.privacy, p.created_at, u.avatar as author_avatar
+            p.privacy, p.created_at, u.avatar as author_avatar,
+            CONCAT(u.first_name, ' ', u.last_name) as author_name
         FROM posts p
         JOIN users u ON p.author_id = u.id
         WHERE p.author_id = ?
@@ -69,7 +70,8 @@ func (r *PostRepository) GetAllPostsByUserID(userID int) ([]models.PostFetch, er
         var post models.PostFetch
         err := rows.Scan(
             &post.ID, &post.AuthorID, &post.Content, 
-            &post.ImageURL, &post.Privacy, &post.CreatedAt, &post.AuthorAvatar,
+            &post.ImageURL, &post.Privacy, &post.CreatedAt, 
+            &post.AuthorAvatar, &post.AuthorName,
         )
         if err != nil {
             log.Println("❌ scan error:", err)
@@ -84,7 +86,8 @@ func (r *PostRepository) GetCustomPostsForUser(authorID, viewerID int) ([]models
     rows, err := r.DB.Query(`
         SELECT 
             p.id, p.author_id, p.content, p.image_url, 
-            p.privacy, p.created_at, u.avatar as author_avatar
+            p.privacy, p.created_at, u.avatar as author_avatar,
+            CONCAT(u.first_name, ' ', u.last_name) as author_name
         FROM posts p
         JOIN users u ON p.author_id = u.id
         WHERE p.author_id = ? AND p.privacy = 'custom'
@@ -103,7 +106,8 @@ func (r *PostRepository) GetCustomPostsForUser(authorID, viewerID int) ([]models
         var post models.PostFetch
         err := rows.Scan(
             &post.ID, &post.AuthorID, &post.Content, 
-            &post.ImageURL, &post.Privacy, &post.CreatedAt, &post.AuthorAvatar,
+            &post.ImageURL, &post.Privacy, &post.CreatedAt, 
+            &post.AuthorAvatar, &post.AuthorName,
         )
         if err != nil {
             log.Println("❌ scan error:", err)
@@ -118,7 +122,8 @@ func (r *PostRepository) getPostsByPrivacy(userID int, privacy string) ([]models
     rows, err := r.DB.Query(`
         SELECT 
             p.id, p.author_id, p.content, p.image_url, 
-            p.privacy, p.created_at, u.avatar as author_avatar
+            p.privacy, p.created_at, u.avatar as author_avatar,
+            CONCAT(u.first_name, ' ', u.last_name) as author_name
         FROM posts p
         JOIN users u ON p.author_id = u.id
         WHERE p.author_id = ? AND p.privacy = ?
@@ -134,7 +139,8 @@ func (r *PostRepository) getPostsByPrivacy(userID int, privacy string) ([]models
         var post models.PostFetch
         err := rows.Scan(
             &post.ID, &post.AuthorID, &post.Content, 
-            &post.ImageURL, &post.Privacy, &post.CreatedAt, &post.AuthorAvatar,
+            &post.ImageURL, &post.Privacy, &post.CreatedAt, 
+            &post.AuthorAvatar, &post.AuthorName,
         )
         if err != nil {
             log.Println("❌ scan error:", err)
@@ -196,7 +202,8 @@ func (r *PostRepository) GetPostsForUser(userID int) ([]models.PostFetch, error)
             p.image_url, 
             p.privacy, 
             p.created_at,
-            u.avatar as author_avatar
+            u.avatar as author_avatar,
+            CONCAT(u.first_name, ' ', u.last_name) as author_name
         FROM posts p
         JOIN users u ON p.author_id = u.id
         WHERE p.privacy = 'public' OR p.author_id = ? OR p.id IN (
@@ -221,6 +228,7 @@ func (r *PostRepository) GetPostsForUser(userID int) ([]models.PostFetch, error)
             &post.Privacy,
             &post.CreatedAt,
             &post.AuthorAvatar,
+            &post.AuthorName,
         )
         if err != nil {
             log.Println("❌ scan error:", err)
