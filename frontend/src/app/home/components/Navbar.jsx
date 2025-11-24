@@ -30,7 +30,7 @@ export function Navbar() {
 
   // Existing Navbar State
   const [showProfile, setShowProfile] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(user?.IsPrivate || false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -39,6 +39,15 @@ export function Navbar() {
   const { workerMessages, sendWorkerMessage } = useSharedWorker();
   const { setShowMessages } = useMessageSidebar()
   const openMessages = () => setShowMessages(true);
+
+  // Sync isPrivate state with user data
+  useEffect(() => {
+  if (user?.IsPrivate !== undefined) {
+    setIsPrivate(user.IsPrivate);
+  }
+}, [user]);
+
+
   // Initialize SharedWorker when user is available
   useEffect(() => {
     console.log("Current user:", user);
@@ -92,7 +101,7 @@ export function Navbar() {
         formData.append("recipient_ids", id);
       });
 
-      const res = await fetch("http://localhost:8080/api/posts", {
+      const res = await fetch("/api/posts", {
         method: "POST",
         body: formData,
         credentials: "include",
@@ -111,7 +120,7 @@ export function Navbar() {
       }
 
       // Rafraîchir les posts en appelant l'API pour récupérer le nouveau post
-      await fetch("http://localhost:8080/api/posts", {
+      await fetch("/api/posts", {
         credentials: "include"
       })
         .then(res => res.json())
