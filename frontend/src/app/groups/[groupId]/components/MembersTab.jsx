@@ -1,25 +1,61 @@
+// MembersTab.jsx - Version simplifiée et corrigée
 import styles from './MembersTab.module.css'
 
-export default function MembersTab({ group, showInviteForm, setShowInviteForm }) {
+export default function MembersTab({ 
+  group, 
+  members, 
+  loading, 
+  showInviteForm, 
+  setShowInviteForm,
+  onRefreshMembers 
+}) {
+  // Pas de useEffect ici pour éviter les boucles
+  // La rafraîchissement se fera manuellement ou via le parent
+
+  const handleRefreshClick = () => {
+    if (onRefreshMembers) {
+      onRefreshMembers();
+    }
+  };
+
   return (
     <>
-      <button
-        onClick={() => setShowInviteForm(true)}
-        className={styles.inviteButton}
-      >
-        Invite Members
-      </button>
+      <div className={styles.headerRow}>
+        <button
+          onClick={() => setShowInviteForm(true)}
+          className={styles.inviteButton}
+          disabled={loading}
+        >
+          Invite Members
+        </button>
+        <button
+          onClick={handleRefreshClick}
+          className={styles.refreshButton}
+          disabled={loading}
+        >
+          ↻ Refresh
+        </button>
+      </div>
 
       <div className={styles.membersContainer}>
-        <h3 className={styles.title}>Group Members</h3>
-        {group.members && group.members.length > 0 ? (
+        <h3 className={styles.title}>
+          Group Members ({Array.isArray(members) ? members.length : 0})
+        </h3>
+        
+        {loading ? (
+          <div className={styles.loading}>Loading members...</div>
+        ) : members && members.length > 0 ? (
           <div className={styles.membersList}>
-            {group.members.map(member => (
-              <MemberItem key={member.id} member={member} />
+            {members.map(member => (
+              <MemberItem key={`${member.id}-${member.role}`} member={member} />
             ))}
           </div>
         ) : (
-          <p className={styles.noMembersText}>No members in this group yet</p>
+          <p className={styles.noMembersText}>
+            {members === null || members === undefined 
+              ? 'Error loading members' 
+              : 'No members in this group yet'}
+          </p>
         )}
       </div>
     </>
@@ -27,20 +63,45 @@ export default function MembersTab({ group, showInviteForm, setShowInviteForm })
 }
 
 function MemberItem({ member }) {
+  // Afficher correctement les informations
+  const avatarUrl = member.avatar 
+    ? (member.avatar.startsWith('http') 
+        ? member.avatar 
+        : `http://localhost:8080/${member.avatar.replace(/^\/+/, '')}`)
+    : null;
+
   return (
     <div className={styles.memberItem}>
       <div className={styles.avatar}>
-        {member.name.charAt(0)}
+        {avatarUrl ? (
+          <img 
+            src={avatarUrl} 
+            alt={member.username} 
+            className={styles.avatarImage}
+            onError={(e) => {
+              e.target.src = '/avatar.png';
+              e.target.className = styles.avatarFallback;
+            }}
+          />
+        ) : (
+          <div className={styles.avatarFallback}>
+            {member.username?.charAt(0)?.toUpperCase() || 'U'}
+          </div>
+        )}
       </div>
       <div className={styles.memberInfo}>
-        <p className={styles.memberName}>{member.name}</p>
-        <p className={styles.memberDetails}>
-          Joined {new Date(member.joined_at).toLocaleDateString()}
-          {member.is_admin && (
+        <p className={styles.memberName}>
+          {member.username || 'Unknown User'}
+          {member.role === 'creator' && (
             <span className={styles.adminBadge}>
               Admin
             </span>
           )}
+        </p>
+        <p className={styles.memberDetails}>
+          Joined {member.joined_at 
+            ? new Date(member.joined_at).toLocaleDateString() 
+            : 'Unknown date'}
         </p>
       </div>
     </div>

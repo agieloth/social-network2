@@ -72,7 +72,7 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Delegate to service
 	err = h.authService.Register(form)
 	if err != nil {
-		http.Error(w, "Could not register: "+err.Error(), http.StatusConflict)
+		http.Error(w, "Registration failed, email already in use", http.StatusConflict)
 		return
 	}
 

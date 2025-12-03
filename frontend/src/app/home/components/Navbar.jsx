@@ -42,10 +42,10 @@ export function Navbar() {
 
   // Sync isPrivate state with user data
   useEffect(() => {
-  if (user?.IsPrivate !== undefined) {
-    setIsPrivate(user.IsPrivate);
-  }
-}, [user]);
+    if (user?.IsPrivate !== undefined) {
+      setIsPrivate(user.IsPrivate);
+    }
+  }, [user]);
 
 
   // Initialize SharedWorker when user is available
@@ -189,12 +189,17 @@ export function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/logout', { credentials: 'include', method: 'POST' });
-      window.location.reload();
+      await fetch('/api/logout', {
+        credentials: 'include',
+        method: 'POST'
+      })
     } catch (err) {
-      console.error('Logout error:', err);
+      console.error('Logout error:', err)
+    } finally {
+      // 🔥 IMPORTANT: Redirection immédiate
+      window.location.href = '/login'
     }
-  };
+  }
 
   const fetchNotifications = async () => {
     try {
@@ -215,7 +220,11 @@ export function Navbar() {
       setNotifications(uniqueNotifs);
       setUnreadCount(uniqueNotifs.filter(n => !n.seen).length);
     } catch (err) {
-      console.error("Error fetching notifications", err);
+      if (!err.message.includes('UNAUTHORIZED') &&
+        !err.message.includes('JSON') &&
+        !err.message.includes('Unauthorized')) {
+        console.error("Error fetching notifications", err);
+      }
     }
   };
 

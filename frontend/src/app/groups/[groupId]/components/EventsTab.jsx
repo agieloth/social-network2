@@ -3,21 +3,35 @@ import styles from './EventsTab.module.css'
 
 export default function EventsTab({ group, showEventForm, setShowEventForm }) {
   const [events, setEvents] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  // Fonction pour récupérer les events
+  const fetchEvents = async () => {
+    if (!group?.id) return;
+    
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/groups/${group.id}/events`, {
+        credentials: 'include'
+      });
+      
+      if (!res.ok) throw new Error('Failed to fetch events');
+      
+      const data = await res.json();
+      setEvents(data || []);
+    } catch (err) {
+      console.error('Failed to fetch events', err);
+      setEvents([]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const res = await fetch(`/api/groups/${group.id}/events`)
-        if (!res.ok) throw new Error('Failed to fetch events')
-        const data = await res.json()
-        setEvents(data || [])
-      } catch (err) {
-        console.error('Failed to fetch events', err)
-      }
+    if (group?.id) {
+      fetchEvents();
     }
-
-    fetchEvents()
-  }, [group.id])
+  }, [group?.id]);
 
   const handleVote = async (eventId, response) => {
     try {
@@ -28,13 +42,19 @@ export default function EventsTab({ group, showEventForm, setShowEventForm }) {
         },
         body: JSON.stringify({ response }),
         credentials: 'include'
-      })
+      });
 
-      if (!res.ok) throw new Error('Failed to submit response')
-      fetchEvents()
+      if (!res.ok) throw new Error('Failed to submit response');
+      
+      // Rafraîchir les events après le vote
+      await fetchEvents();
     } catch (err) {
-      console.error('Error submitting response:', err)
+      console.error('Error submitting response:', err);
     }
+  };
+
+  if (loading) {
+    return <div className={styles.loading}>Loading events...</div>;
   }
 
   return (
@@ -42,6 +62,7 @@ export default function EventsTab({ group, showEventForm, setShowEventForm }) {
       <button
         onClick={() => setShowEventForm(true)}
         className={styles.createEventButton}
+        disabled={loading}
       >
         Create Event
       </button>
@@ -61,7 +82,7 @@ export default function EventsTab({ group, showEventForm, setShowEventForm }) {
         )}
       </div>
     </>
-  )
+  );
 }
 
 function EventItem({ event, isCreator, onVote }) {

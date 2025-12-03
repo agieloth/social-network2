@@ -28,6 +28,8 @@ export default function GroupDetailPage({ params }) {
   const [showPostForm, setShowPostForm] = useState(false)
   const [showEventForm, setShowEventForm] = useState(false)
   const [showInviteForm, setShowInviteForm] = useState(false)
+  const [members, setMembers] = useState([]) // Ajoutez cet état
+  const [loadingMembers, setLoadingMembers] = useState(false) // Ajoutez cet état
 
   const { user } = useAuth()
   const { sendWorkerMessage } = useSharedWorker()
@@ -75,6 +77,53 @@ export default function GroupDetailPage({ params }) {
     fetchGroup()
   }, [groupId])
 
+  useEffect(() => {
+    // Ne charger les membres que quand on clique sur le tab "members"
+    if (activeTab === 'members' && group?.is_creator) {
+      const loadMembers = async () => {
+        setLoadingMembers(true);
+        try {
+          const res = await fetch(`/api/groups/${group.id}/members`, {
+            credentials: 'include'
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            setMembers(data);
+          }
+        } catch (err) {
+          console.error('Error loading members:', err);
+        } finally {
+          setLoadingMembers(false);
+        }
+      };
+
+      loadMembers();
+    }
+  }, [activeTab, group?.id, group?.is_creator]); // Seulement ces dépendances
+
+  // Fonction séparée pour rafraîchir (appelée manuellement)
+  const refreshMembers = async () => {
+    if (!group?.id) return;
+
+    setLoadingMembers(true);
+    try {
+      const res = await fetch(`/api/groups/${group.id}/members`, {
+        credentials: 'include'
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setMembers(data);
+      }
+    } catch (err) {
+      console.error('Error refreshing members:', err);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+
   // Only show loading/error states after auth check
   if (loading || !user) return <LoadingState />
   if (error) return <ErrorState error={error} />
@@ -118,8 +167,11 @@ export default function GroupDetailPage({ params }) {
           {activeTab === 'members' && group.is_creator && (
             <MembersTab
               group={group}
+              members={members} // Passez les membres récupérés
+              loading={loadingMembers} // Passez l'état de chargement
               showInviteForm={showInviteForm}
               setShowInviteForm={setShowInviteForm}
+              onRefreshMembers={refreshMembers} // Pour rafraîchir après une invitation
             />
           )}
         </div>

@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-chi/chi/v5"
+	// "github.com/go-chi/chi/v5"
 )
 
 var (
@@ -59,6 +59,11 @@ func (h *GroupHandler) GroupRouterHandler(w http.ResponseWriter, r *http.Request
 
 	// Build suffix for routing
 	suffix := strings.Join(pathParts[3:], "/")
+
+	if suffix == "members" && method == http.MethodGet {
+        h.GetGroupMembersHandler(w, r)
+        return
+    }
 
 	// Handle posts/{postID}/comments routes first
 	if len(pathParts) >= 5 && pathParts[3] == "posts" {
@@ -139,6 +144,37 @@ func (h *GroupHandler) GroupRouterHandler(w http.ResponseWriter, r *http.Request
 		http.NotFound(w, r)
 	}
 }
+
+func (h *GroupHandler) GetGroupMembersHandler(w http.ResponseWriter, r *http.Request) {
+    // Extraire le groupID de l'URL
+    groupIDStr := strings.TrimPrefix(r.URL.Path, "/api/groups/")
+    groupIDStr = strings.TrimSuffix(groupIDStr, "/members")
+    
+    groupID, err := strconv.Atoi(groupIDStr)
+    if err != nil {
+        http.Error(w, "Invalid group ID", http.StatusBadRequest)
+        return
+    }
+
+    // Appeler le service
+    members, err := h.Service.GetGroupMembers(groupID)
+    if err != nil {
+        if strings.Contains(err.Error(), "not found") {
+            http.Error(w, "Group not found", http.StatusNotFound)
+            return
+        }
+        http.Error(w, "Failed to get group members", http.StatusInternalServerError)
+        return
+    }
+
+    // Retourner la réponse JSON
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(members); err != nil {
+        http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+    }
+}
+
+
 func (h *GroupHandler) GetGroupChat(w http.ResponseWriter, r *http.Request) {
 	// Get user ID from session
 	userID, ok := h.Session.GetUserIDFromSession(w, r)
@@ -964,30 +1000,30 @@ func (h *GroupHandler) HandleEventVote(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *GroupHandler) GetGroupMembers(w http.ResponseWriter, r *http.Request) {
-	// Extract group ID from URL params or query string
-	groupIDStr := chi.URLParam(r, "groupID")
-	groupID, err := strconv.Atoi(groupIDStr)
-	if err != nil {
-		http.Error(w, "Invalid group ID", http.StatusBadRequest)
-		return
-	}
+// func (h *GroupHandler) GetGroupMembers(w http.ResponseWriter, r *http.Request) {
+// 	// Extract group ID from URL params or query string
+// 	groupIDStr := chi.URLParam(r, "groupID")
+// 	groupID, err := strconv.Atoi(groupIDStr)
+// 	if err != nil {
+// 		http.Error(w, "Invalid group ID", http.StatusBadRequest)
+// 		return
+// 	}
 
-	// Call service layer
-	members, err := h.Service.GetGroupMembers(groupID)
-	if err != nil {
-		// Handle different error types appropriately
-		if strings.Contains(err.Error(), "not found") {
-			http.Error(w, "Group not found", http.StatusNotFound)
-			return
-		}
-		http.Error(w, "Failed to get group members", http.StatusInternalServerError)
-		return
-	}
+// 	// Call service layer
+// 	members, err := h.Service.GetGroupMembers(groupID)
+// 	if err != nil {
+// 		// Handle different error types appropriately
+// 		if strings.Contains(err.Error(), "not found") {
+// 			http.Error(w, "Group not found", http.StatusNotFound)
+// 			return
+// 		}
+// 		http.Error(w, "Failed to get group members", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	// Return JSON response
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(members); err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-	}
-}
+// 	// Return JSON response
+// 	w.Header().Set("Content-Type", "application/json")
+// 	if err := json.NewEncoder(w).Encode(members); err != nil {
+// 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+// 	}
+// }

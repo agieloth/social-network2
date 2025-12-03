@@ -1,80 +1,98 @@
 .inviteButton {
   width: 100%;
   padding: 0.5rem 1rem;
-  background-color: #2563eb; /* bg-blue-600 */
+  background-color: #2563eb;
   color: white;
-  border-radius: 0.5rem; /* rounded-lg */
+  border-radius: 0.5rem;
   transition: background-color 0.2s;
   margin-bottom: 1rem;
 }
 
 .inviteButton:hover {
-  background-color: #1d4ed8; /* hover:bg-blue-700 */
+  background-color: #1d4ed8;
 }
 
 .membersContainer {
-  background-color: rgba(31, 41, 55, 0.5); /* bg-gray-800/50 */
-  border-radius: 0.5rem; /* rounded-lg */
-  padding: 1rem; /* p-4 */
-  border: 1px solid rgba(55, 65, 81, 0.5); /* border-gray-700/50 */
+  background-color: rgba(31, 41, 55, 0.5);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  border: 1px solid rgba(55, 65, 81, 0.5);
 }
 
 .title {
-  font-size: 1.25rem; /* text-xl */
-  font-weight: 700; /* font-bold */
+  font-size: 1.25rem;
+  font-weight: 700;
   color: white;
-  margin-bottom: 1rem; /* mb-4 */
+  margin-bottom: 1rem;
 }
 
 .membersList {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem; /* space-y-3 */
+  gap: 0.75rem;
 }
 
 .noMembersText {
-  color: #9ca3af; /* text-gray-400 */
+  color: #9ca3af;
 }
 
 .memberItem {
   display: flex;
   align-items: center;
-  gap: 0.75rem; /* gap-3 */
-  padding: 0.75rem; /* p-3 */
-  background-color: rgba(55, 65, 81, 0.3); /* bg-gray-700/30 */
-  border-radius: 0.5rem; /* rounded-lg */
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: rgba(55, 65, 81, 0.3);
+  border-radius: 0.5rem;
 }
 
 .avatar {
-  width: 2.5rem; /* w-10 */
-  height: 2.5rem; /* h-10 */
-  border-radius: 9999px; /* rounded-full */
-  background-color: #4b5563; /* bg-gray-600 */
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #4b5563;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: bold;
+  overflow: hidden;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .memberInfo {
-  /* No specific container style needed */
+  flex: 1;
 }
 
 .memberName {
+  font-weight: 600;
+  margin-bottom: 5px;
   color: white;
 }
 
 .memberDetails {
-  font-size: 0.75rem; /* text-xs */
-  color: #9ca3af; /* text-gray-400 */
+  font-size: 0.75rem;
+  color: #9ca3af;
 }
 
 .adminBadge {
-  margin-left: 0.5rem; /* ml-2 */
-  background-color: rgba(147, 51, 234, 0.3); /* bg-purple-600/30 */
-  color: #c4b5fd; /* text-purple-300 */
-  padding: 0.125rem 0.5rem; /* px-2 py-0.5 */
-  border-radius: 0.25rem; /* rounded */
-  font-size: 0.75rem; /* text-xs */
+  margin-left: 0.5rem;
+  background-color: rgba(147, 51, 234, 0.3);
+  color: #c4b5fd;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.noMembersText {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
 }

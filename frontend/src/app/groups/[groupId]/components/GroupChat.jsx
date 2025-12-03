@@ -24,19 +24,23 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
   useEffect(() => {
     if (worker) {
       worker.port.onmessage = (event) => {
-        console.log("rah dkhel");
-
         const message = event.data.data;
         if (event.type === 'user_online' && message.groupId === parseInt(group?.id)) {
           setOnlineUsers(prev => [...prev, message.from])
         } else if (message.type === 'group' && message.groupId === parseInt(group?.id)) {
-          console.log("dkhel tra hna ");
-
-          setGroupChatMessages(prev => [...prev, message])
+          // Déterminer si c'est l'utilisateur courant
+          const isCurrentUser = message.from === user?.ID;
+          
+          setGroupChatMessages(prev => [...prev, {
+            ...message,
+            sender_name: isCurrentUser ? 'You' : (message.sender_nickname || 'User'),
+            isCurrentUser: isCurrentUser,
+            isOnline: onlineUsers.includes(message.from)
+          }])
         }
       }
     }
-  }, [worker, group?.id])
+  }, [worker, group?.id, user?.ID, onlineUsers])
 
   const fetchMessages = async () => {
     setLoading(true)
@@ -47,7 +51,16 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
       })
       if (!res.ok) throw new Error('Failed to fetch messages')
       const data = await res.json()
-      setGroupChatMessages(data || [])
+      
+      // Formater les messages avec les noms d'expéditeur
+      const formattedMessages = data.map(msg => ({
+        ...msg,
+        sender_name: msg.sender_nickname || 'User',
+        isCurrentUser: msg.sender_id === user?.ID,
+        isOnline: onlineUsers.includes(msg.sender_id)
+      }))
+      
+      setGroupChatMessages(formattedMessages || [])
     } catch (err) {
       setError(err.message)
     } finally {
@@ -70,7 +83,9 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
     setGroupChatMessages(prev => [...prev, {
       ...message,
       sender_name: 'You',
-      isCurrentUser: true
+      isCurrentUser: true,
+      isOnline: true,
+      sender_nickname: user.nickname || user.username || 'You'
     }])
     setGroupChatInput('')
     setShowEmojiPicker(false)
@@ -124,7 +139,12 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
           </button>
         </div>
 
-        <ChatMessages messages={groupChatMessages} user={user} loading={loading} error={error} onlineUsers={onlineUsers} />
+        <ChatMessages 
+          messages={groupChatMessages} 
+          user={user} 
+          loading={loading} 
+          error={error} 
+        />
         <ChatInput
           ref={inputRef}
           value={groupChatInput}
@@ -141,7 +161,7 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
   )
 }
 
-function ChatMessages({ messages, user, loading, error, onlineUsers }) {
+function ChatMessages({ messages, user, loading, error }) {
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
@@ -163,7 +183,7 @@ function ChatMessages({ messages, user, loading, error, onlineUsers }) {
         </p>
       ) : (
         messages.map((msg, index) => (
-          <ChatMessage key={index} message={{ ...msg, isCurrentUser: msg.from === user?.ID, isOnline: onlineUsers.includes(msg.from) }} />
+          <ChatMessage key={index} message={msg} />
         ))
       )}
       <div ref={messagesEndRef} />
@@ -182,7 +202,7 @@ function ChatMessage({ message }) {
     message.isCurrentUser ? styles.currentUser : styles.otherUser
   ].join(' ')
 
-  // Function to render message content with clickable links (same as ChatBox)
+  // Function to render message content with clickable links
   const renderMessageContent = (content) => {
     if (!content) return null
     
@@ -199,7 +219,8 @@ function ChatMessage({ message }) {
       <div className={messageBubbleClasses}>
         <p className={styles.messageContent}>{renderMessageContent(message.content)}</p>
         <p className={styles.messageInfo}>
-          {message.isCurrentUser ? 'You' : message.sender_name || 'User'}
+          {/* Afficher "You" pour l'utilisateur courant, sinon le nom de l'expéditeur */}
+          {message.isCurrentUser ? 'You' : (message.sender_name || 'User')}
           {message.isOnline && <span className={styles.onlineIndicator}></span>}
           • {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
