@@ -1,11 +1,13 @@
 // public/sharedWorker.js
+console.log("🚀 SharedWorker script loaded!");
+
 let socket = null;
 const ports = [];
 let isConnected = false;
 let userId = null;
 let reconnectAttempts = 0;
 const maxReconnectAttempts = 5;
-let reconnectInterval = null; // Add this line for interval tracking
+let reconnectInterval = null;
 
 function connectWebSocket() {
   // Clear any existing interval
@@ -19,13 +21,14 @@ function connectWebSocket() {
   socket.onopen = () => {
     reconnectAttempts = 0;
     isConnected = true;
+    console.log("✅ WebSocket connected for user:", userId);
     broadcast({ type: "status", connected: true, message: "✅ WebSocket connected" });
   };
 
   socket.onmessage = (msg) => {
     try {
       const parsed = JSON.parse(msg.data);
-      console.log("coming data : ", parsed);
+      console.log("📨 Message received from WebSocket:", parsed);
       
       // Forward all messages to all ports
       broadcast({
@@ -33,10 +36,10 @@ function connectWebSocket() {
         data: parsed
       });
     } catch (err) {
-      console.error("Error parsing message:", err);
+      console.error("Error parsing message from WebSocket:", err, "Raw data:", msg.data);
       broadcast({
         type: "error",
-        message: "Failed to parse message"
+        message: "Failed to parse message: " + err.message
       });
     }
   };
@@ -75,17 +78,26 @@ function connectWebSocket() {
 onconnect = function (e) {
   const port = e.ports[0];
   ports.push(port);
+  console.log("🔌 New port connected! Total ports:", ports.length);
 
   port.onmessage = function (event) {
     const data = event.data;
 
-    console.log("ya rbi salama ",data)
+    console.log("📬 Message received on port:", data);
 
     switch (data.type) {
       case "INIT":
+        console.log("🔑 INIT message received with userId:", data.userId);
+        console.log("   Current userId:", userId, "Socket exists:", !!socket, "Is connected:", isConnected);
+        
+        // Always update userId
         userId = data.userId;
-        if (!socket) {
+        
+        if (!socket || !isConnected) {
+          console.log("🔌 Creating new WebSocket connection for user:", userId);
           connectWebSocket();
+        } else {
+          console.log("✅ WebSocket already connected for user:", userId);
         }
         break;
 
@@ -113,19 +125,28 @@ onconnect = function (e) {
         }
         break;
       case "SEND":
+        console.log("📤 SEND message - Socket connected:", isConnected, "Message:", data.message);
         if (socket && isConnected) {
           try {
             const payload = typeof data.message === "string"
               ? data.message
               : JSON.stringify(data.message);
+            console.log("🚀 Sending message via WebSocket:", payload);
             socket.send(payload);
+            // Send confirmation to port
+            port.postMessage({
+              type: "message_sent",
+              data: data.message
+            });
           } catch (err) {
+            console.error("❌ Error sending message:", err);
             port.postMessage({
               type: "error",
-              message: "Failed to send message"
+              message: "Failed to send message: " + err.message
             });
           }
         } else {
+          console.error("❌ WebSocket not connected. IsConnected:", isConnected, "Socket:", !!socket);
           port.postMessage({
             type: "error",
             message: "WebSocket not connected"

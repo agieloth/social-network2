@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import styles from './CreatePostForm.module.css'
 
-export default function CreatePostForm({ onPostCreated }) {
+export default function CreatePostForm() {
   const [content, setContent] = useState('')
   const [privacy, setPrivacy] = useState('public')
   const [message, setMessage] = useState('')
@@ -20,7 +20,6 @@ export default function CreatePostForm({ onPostCreated }) {
 
     if (res.ok) {
       const newPost = await res.json()
-      onPostCreated && onPostCreated(newPost)
       setContent('')
       setMessage('✅ Post created')
     } else {

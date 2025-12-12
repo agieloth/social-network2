@@ -8,6 +8,8 @@ import ChatBox from "../messages/components/ChatBox";
 import Post from './components/Post'
 import styles from './HomePage.module.css'
 import { useMessageSidebar } from "../../contexts/MessageSideBarContext";
+import { useWorker } from "../../contexts/WorkerContext";
+import { useNavbar } from "../../contexts/NavBarContext";
 
 export default function HomePage() {
   // States for posts, user, UI, etc.
@@ -25,9 +27,7 @@ export default function HomePage() {
   const [results, setResults] = useState([]);
   const [openChats, setOpenChats] = useState([]);
   const [showPostForm, setShowPostForm] = useState(false)
-  const [notifications, setNotifications] = useState([])
   const [realtimeNotification, setRealtimeNotification] = useState(null)
-  const [unreadCount, setUnreadCount] = useState(0);
   const [chatUsers, setChatUsers] = useState([])
 
   // NEW: Message notification states
@@ -36,11 +36,13 @@ export default function HomePage() {
   const [isWindowFocused, setIsWindowFocused] = useState(true);
 
   const { showMessages, setShowMessages } = useMessageSidebar()
+  const { worker: contextWorker, setWorker } = useWorker()
+  const { setNotifications, setUnreadCount } = useNavbar()
 
   const removeNotificationCallback = useRef(null);
 
   // --- SharedWorker related ---
-  const workerRef = useRef(null);
+  const workerRef = useRef(contextWorker);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState({});
 
@@ -129,56 +131,69 @@ export default function HomePage() {
     }, 5000);
   }, [chatUsers, showBrowserNotification]);
 
-  // Setup SharedWorker connection once user is set
+  // Setup Worker message handler - use Worker from context or create local
   useEffect(() => {
-    if (!user?.ID) return;
-
-    if (!workerRef.current) {
-      workerRef.current = new SharedWorker('/sharedWorker.jsx');
-      const port = workerRef.current.port;
-
-      port.start();
-      port.postMessage({ type: "INIT", userId: user.ID });
-
-      port.onmessage = (event) => {
-        console.log("Message received from SharedWorker:", event.data);
-
-        const { type, data, message } = event.data;
-
-        // Handle incoming messages
-        if (data && (type === "message" || data.type === "private")) {
-          console.log('Processing chat message');
-          setMessages((prev) => [...prev, data]);
-
-          // NEW: Check if message is from another user (not sent by current user)
-          if (data.from !== user.ID) {
-            handleIncomingMessage(data);
-          }
-        }
-        else if (message && (type === "message" || type === "private")) {
-          console.log('Processing chat message (legacy format)');
-          setMessages((prev) => [...prev, message]);
-
-          // NEW: Check if message is from another user
-          if (message.from !== user.ID) {
-            handleIncomingMessage(message);
-          }
-        }
-        // Handle other notifications
-        else if (type === "notification" || type === "follow_request" ||
-          type === "follow_request_response" || type === "follow_request_cancelled") {
-          const notificationData = data || message;
-          setNotifications(prev => [notificationData, ...prev]);
-          setUnreadCount(prev => prev + 1);
-          setRealtimeNotification(notificationData);
-        }
-        else if (type === "status" || type === "error") {
-          const statusMessage = data || message;
-          console.log(`[Worker]: ${statusMessage}`);
-        }
-      };
+    let activeWorker = workerRef.current;
+    
+    // If no worker yet, create one locally
+    if (!activeWorker && user?.ID) {
+      console.log("🔧 Creating Worker in home/page.jsx for user:", user.ID);
+      try {
+        activeWorker = new Worker('/worker.js');
+        activeWorker.postMessage({ type: 'INIT', userId: user.ID });
+        workerRef.current = activeWorker;
+        setWorker(activeWorker); // Store in context
+      } catch (err) {
+        console.error("❌ Error creating Worker:", err);
+        return;
+      }
     }
-  }, [user?.ID, handleIncomingMessage]);
+
+    if (!activeWorker) {
+      console.log("⏳ Worker not yet available in home/page.jsx");
+      return;
+    }
+
+    console.log("✅ Worker available in home/page.jsx, setting up message handler");
+
+    // Set up message handler
+    activeWorker.onmessage = (event) => {
+      console.log("📨 Message received from Worker in home/page.jsx:", event.data);
+
+      const { type, data, message } = event.data;
+
+      // Handle incoming PRIVATE messages only (show toast notification)
+      if (data && (type === "private" || data.type === "private")) {
+        console.log('Processing private chat message');
+        setMessages((prev) => [...prev, data]);
+
+        // Check if message is from another user (not sent by current user)
+        if (data.from !== user?.ID) {
+          handleIncomingMessage(data);
+        }
+      }
+      // Handle GROUP messages (no toast, just store)
+      else if (data && (type === "group_message" || data.type === "group_message")) {
+        console.log('Processing group message');
+        // Group messages are handled elsewhere
+      }
+      // Handle other notifications (no toast, just add to notification list with unread count)
+      else if (type === "notification" || type === "follow_request" ||
+        type === "follow_request_response" || type === "follow_request_cancelled" ||
+        type === "group_event_created" || type === "group_join_request" ||
+        type === "group_invitation" || type === "user_online") {
+        const notificationData = data || message;
+        console.log('Processing notification:', type, notificationData);
+        setNotifications(prev => [notificationData, ...prev]);
+        setUnreadCount(prev => prev + 1);
+        // DO NOT show toast for non-message notifications
+      }
+      else if (type === "status" || type === "error") {
+        const statusMessage = data || message;
+        console.log(`[Worker]: ${statusMessage}`);
+      }
+    };
+  }, [contextWorker, user?.ID, handleIncomingMessage, setNotifications, setUnreadCount, setWorker]);
 
   // NEW: Function to mark messages as read when chat is opened
   const markMessagesAsRead = useCallback((userId) => {
@@ -229,22 +244,29 @@ export default function HomePage() {
 
     lastMessageTime.current = now;
 
-    workerRef.current.port.postMessage({ type: "SEND", message: chatMsg });
+    // Ensure timestamp is in ISO format
+    const messageToSend = {
+      ...chatMsg,
+      timestamp: chatMsg.timestamp || new Date().toISOString()
+    };
+
+    console.log("Sending message to Worker:", messageToSend);
+    workerRef.current.postMessage({ type: "SEND", message: messageToSend });
 
     const messageWithId = {
-      ...chatMsg,
-      uniqueId: `${chatMsg.from}-${chatMsg.to}-${chatMsg.timestamp}-${Date.now()}-sent`
+      ...messageToSend,
+      uniqueId: `${messageToSend.from}-${messageToSend.to}-${messageToSend.timestamp}-${Date.now()}-sent`
     };
 
     setMessages(prev => {
       const validPrev = prev.filter(m => m && typeof m === 'object');
       const exists = validPrev.some(m =>
         m &&
-        m.from === chatMsg.from &&
-        m.to === chatMsg.to &&
-        m.content === chatMsg.content &&
-        m.timestamp && chatMsg.timestamp &&
-        Math.abs(new Date(m.timestamp) - new Date(chatMsg.timestamp)) < 1000
+        m.from === messageToSend.from &&
+        m.to === messageToSend.to &&
+        m.content === messageToSend.content &&
+        m.timestamp && messageToSend.timestamp &&
+        Math.abs(new Date(m.timestamp) - new Date(messageToSend.timestamp)) < 1000
       );
 
       if (exists) return prev;
@@ -426,10 +448,8 @@ export default function HomePage() {
 
   const handleLogout = async () => {
     try {
-      if (workerRef.current) {
-        workerRef.current.port.close();
-        workerRef.current = null;
-      }
+      // Don't close worker - it should stay alive for other components
+      // Worker is managed globally by WorkerContext
 
       const res = await fetch("http://localhost:8080/api/logout", {
         method: "POST",
@@ -503,21 +523,6 @@ export default function HomePage() {
       )}
 
       <div className={styles.postFormContainer}>
-        {showPostForm && (
-          <div className={styles.postFormWrapper}>
-            <PostForm
-              content={content}
-              setContent={setContent}
-              image={image}
-              setImage={setImage}
-              privacy={privacy}
-              setPrivacy={setPrivacy}
-              handleSubmit={handleSubmit}
-              creating={creating}
-              ref={fileInputRef}
-            />
-          </div>
-        )}
       </div>
 
       <h2 className={styles.postsHeading}></h2>

@@ -9,6 +9,8 @@ export function NavbarProvider({ children }) {
   const [searchResults, setSearchResults] = useState(null);
   const [showPostForm, setShowPostForm] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   return (
     <NavbarContext.Provider value={{
@@ -17,7 +19,11 @@ export function NavbarProvider({ children }) {
       showPostForm,
       setShowPostForm,
       showMessages,
-      setShowMessages
+      setShowMessages,
+      notifications,
+      setNotifications,
+      unreadCount,
+      setUnreadCount
     }}>
       {children}
     </NavbarContext.Provider>

@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter, redirect } from 'next/navigation'
 import { use } from 'react'
-import { useSharedWorker } from '../../../contexts/SharedWorkerContext'
 import { useAuth } from '../../../contexts/AuthContext'
 import GroupHeader from './components/GroupHeader'
 import GroupTabs from './components/GroupTabs'
@@ -32,7 +31,6 @@ export default function GroupDetailPage({ params }) {
   const [loadingMembers, setLoadingMembers] = useState(false) // Ajoutez cet état
 
   const { user } = useAuth()
-  const { sendWorkerMessage } = useSharedWorker()
   const router = useRouter()
 
   // Handle redirect in useEffect

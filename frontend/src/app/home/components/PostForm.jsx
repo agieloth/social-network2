@@ -4,13 +4,22 @@
 import { useEffect, useState, forwardRef } from 'react'
 import styles from './PostForm.module.css'
 
-const PostForm = forwardRef(function PostForm(
-  { content, setContent, image, setImage, privacy, setPrivacy, handleSubmit, creating },
-  fileInputRef
-) {
+const PostForm = forwardRef(function PostForm(props, fileInputRef) {
+  const { content, setContent, image, setImage, privacy, setPrivacy, handleSubmit, creating, onClose } = props;
 
   const [recipients, setRecipients] = useState([])
   const [recipientIds, setRecipientIds] = useState([])
+
+  // Fonction de fermeture par défaut si onClose n'est pas fourni
+  const handleClose = () => {
+    console.log('Close button clicked, onClose:', typeof onClose);
+    if (onClose && typeof onClose === 'function') {
+      console.log('Calling onClose...');
+      onClose();
+    } else {
+      console.warn('onClose prop not provided or not a function');
+    }
+  };
 
   // Charger les abonnés quand privacy devient "custom"
   useEffect(() => {
@@ -50,6 +59,17 @@ const PostForm = forwardRef(function PostForm(
 
   return (
     <form onSubmit={onSubmit} className={styles.form}>
+      <div className={styles.formHeader}>
+        <h3 className={styles.formTitle}>Créer un post</h3>
+        <button
+          type="button"
+          onClick={handleClose}
+          className={styles.closeButton}
+          aria-label="Close post form"
+        >
+          ✕
+        </button>
+      </div>
       <textarea
         placeholder="Exprimez-vous..."
         value={content}

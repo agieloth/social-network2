@@ -37,13 +37,31 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.Register:
 			h.Clients[client.ID] = client
-			fmt.Println("✅ Registered user", client.ID)
+			fmt.Printf("\n✅ === USER REGISTERED === \n")
+			fmt.Printf("   User ID: %d\n", client.ID)
+			fmt.Printf("   Total connected users: %d\n", len(h.Clients))
+			fmt.Printf("   Connected user IDs: %v\n\n", func() []int {
+				ids := make([]int, 0)
+				for id := range h.Clients {
+					ids = append(ids, id)
+				}
+				return ids
+			}())
 
 		case client := <-h.Unregister:
 			delete(h.Clients, client.ID)
 			close(client.Send)
 
 		case msg := <-h.Broadcast:
+			fmt.Printf("📨 Broadcast received - Type: %s, From: %d, To: %d\n", msg.Type, msg.From, msg.To)
+			fmt.Printf("🔍 Current connected clients: %v\n", func() []int {
+				ids := make([]int, 0)
+				for id := range h.Clients {
+					ids = append(ids, id)
+				}
+				return ids
+			}())
+
 			msgBytes, err := json.Marshal(msg)
 			if err != nil {
 				fmt.Println("❌ Failed to marshal message:", err)
@@ -54,7 +72,7 @@ func (h *Hub) Run() {
 			case "private":
 				// Process private message
 				if err := h.messageService.ProcessPrivateMessage(msg); err != nil {
-					fmt.Println("Error processing private message:", err)
+					fmt.Println("❌ Error processing private message:", err)
 					continue
 				}
 
@@ -62,14 +80,19 @@ func (h *Hub) Run() {
 				if recipient, ok := h.Clients[msg.To]; ok {
 					select {
 					case recipient.Send <- msgBytes:
-						fmt.Printf("✅ Private message sent to user %d\n", msg.To)
+						fmt.Printf("✅ Private message sent to recipient user %d\n", msg.To)
 					default:
+						fmt.Printf("⚠️ Failed to send to recipient %d (channel full)\n", msg.To)
 						close(recipient.Send)
 						delete(h.Clients, recipient.ID)
 					}
+				} else {
+					fmt.Printf("⚠️ Recipient user %d not connected\n", msg.To)
 				}
+				// NOTE: We don't send confirmation back to sender because the frontend
+				// already handles showing the message locally when it's sent
 
-			case "group":
+			case "group_message":
 				// Process group message
 				if err := h.messageService.ProcessGroupMessage(msg); err != nil {
 					fmt.Println("Error processing group message:", err)

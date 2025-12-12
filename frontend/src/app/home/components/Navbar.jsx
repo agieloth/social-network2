@@ -4,10 +4,11 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { redirect, useRouter } from 'next/navigation';
-import { useSharedWorker } from '../../../contexts/SharedWorkerContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import PostForm from '../../../app/home/components/PostForm';
 import { useMessageSidebar } from '../../../contexts/MessageSideBarContext';
+import { useWorker } from '../../../contexts/WorkerContext';
+import { useNavbar } from '../../../contexts/NavBarContext';
 import Image from 'next/image';
 import styles from './Navbar.module.css';
 
@@ -32,12 +33,11 @@ export function Navbar() {
   const [showProfile, setShowProfile] = useState(false);
   const [isPrivate, setIsPrivate] = useState(user?.IsPrivate || false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const notificationsRef = useRef(null);
   const notificationButtonRef = useRef(null);
-  const { workerMessages, sendWorkerMessage } = useSharedWorker();
+  const { worker } = useWorker();
   const { setShowMessages } = useMessageSidebar()
+  const { notifications, unreadCount, setNotifications, setUnreadCount } = useNavbar()
   const openMessages = () => setShowMessages(true);
 
   // Sync isPrivate state with user data
@@ -47,34 +47,42 @@ export function Navbar() {
     }
   }, [user]);
 
-
-  // Initialize SharedWorker when user is available
-  useEffect(() => {
-    console.log("Current user:", user);
-    if (user?.ID) {
-      console.log("Initializing SharedWorker with user ID:", user.ID);
-      sendWorkerMessage({ type: 'INIT', userId: user.ID });
-    }
-  }, [user, sendWorkerMessage]);
-
   const handleSearch = async (e) => {
     const value = e.target.value;
     setSearch(value);
 
-    if (value.length > 1) {
-      try {
-        const res = await fetch(`http://localhost:8080/api/search?query=${value}`, {
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error("Failed to search users");
-        const data = await res.json();
-        setResults(data);
-      } catch (err) {
-        console.error("Error searching users:", err);
+    // Clear results if search is empty
+    if (value.trim().length === 0) {
+      setResults([]);
+      return;
+    }
+
+    // Only search if query is at least 1 character
+    if (value.trim().length < 1) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:8080/api/search?query=${encodeURIComponent(value)}`, {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        console.warn("Search failed:", res.status);
+        setResults([]);
+        return;
       }
-    } else {
+      const data = await res.json();
+      setResults(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Error searching users:", err);
       setResults([]);
     }
+  };
+
+  const handleSelectUser = (userId) => {
+    router.push(`/profile/${userId}`);
+    setSearch('');
+    setResults([]);
   };
 
   const handleSubmit = async (e, selectedRecipientIds = []) => {
@@ -145,47 +153,8 @@ export function Navbar() {
     }
   };
 
-  // Handle WebSocket messages from SharedWorker
-  useEffect(() => {
-    const handleWebSocketMessage = (message) => {
-      handleRealtimeNotification(message)
-    }
-
-    workerMessages.forEach(msg => {
-      if (msg.type === 'message' && msg.data) {
-        // Handle WebSocket data from server
-        handleWebSocketMessage(msg.data)
-      }
-    })
-  }, [workerMessages])
-
-  // Your existing handleRealtimeNotification function
-  const handleRealtimeNotification = (notification) => {
-    fetchNotifications();
-
-    setNotifications(prev => {
-      const exists = prev.some(n =>
-        n.sender_id === notification.sender_id &&
-        n.type === notification.type &&
-        n.message === notification.message
-      );
-
-      if (exists) return prev;
-
-      const newNotif = {
-        id: notification.id,
-        sender_id: notification.sender_id,
-        type: notification.type,
-        message: notification.message,
-        created_at: notification.created_at || new Date().toISOString(),
-        seen: false
-      };
-
-      const updated = [newNotif, ...prev];
-      setUnreadCount(updated.filter(n => !n.seen).length);
-      return updated;
-    });
-  }
+  // NOTE: Notifications are handled by home/page.jsx and passed down as props
+  // No need to listen to Worker here - avoids duplication
 
   const handleLogout = async () => {
     try {
@@ -269,6 +238,7 @@ export function Navbar() {
         credentials: 'include',
       });
       setNotifications(prev => prev.filter(n => n.id !== notifId));
+      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
       console.error('Error accepting follow:', err);
     }
@@ -299,6 +269,7 @@ export function Navbar() {
 
       if (rejectRes.ok && seenRes.ok && deleteRes.ok) {
         setNotifications(prev => prev.filter(n => n.id !== notifId));
+        setUnreadCount(prev => Math.max(0, prev - 1));
       } else {
         console.error('One or more requests failed');
       }
@@ -331,6 +302,7 @@ export function Navbar() {
           credentials: 'include',
         });
         setNotifications(prev => prev.filter(n => n.id !== notifId));
+        setUnreadCount(prev => Math.max(0, prev - 1));
       }
     } catch (err) {
       console.error('Error approving request:', err)
@@ -360,6 +332,7 @@ export function Navbar() {
           credentials: 'include',
         });
         setNotifications(prev => prev.filter(n => n.id !== notifId));
+        setUnreadCount(prev => Math.max(0, prev - 1));
       }
     } catch (err) {
       console.error('Error declining request:', err)
@@ -393,6 +366,7 @@ export function Navbar() {
         credentials: 'include',
       });
       setNotifications(prev => prev.filter(n => n.id !== notifId));
+      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
       console.error('Error submitting response:', err);
     }
@@ -424,6 +398,7 @@ export function Navbar() {
 
         // Remove the notification from state
         setNotifications(prev => prev.filter(n => n.id !== notifId));
+        setUnreadCount(prev => Math.max(0, prev - 1));
       } else {
         console.error('Failed to accept invitation');
       }
@@ -458,6 +433,7 @@ export function Navbar() {
 
         // Remove the notification from state
         setNotifications(prev => prev.filter(n => n.id !== notifId));
+        setUnreadCount(prev => Math.max(0, prev - 1));
       } else {
         alert(res.status)
         console.error('Failed to decline invitation');
@@ -521,13 +497,9 @@ export function Navbar() {
               <div className={styles.searchResults}>
                 {results.map((user) => (
                   <div
-                    key={user.id}
+                    key={user.id || user.ID}
                     className={styles.searchResultItem}
-                    onClick={() => {
-                      router.push(`/profile/${user.id}`);
-                      setSearch('');
-                      setResults([]);
-                    }}
+                    onClick={() => handleSelectUser(user.id || user.ID)}
                   >
                     <p className={styles.searchResultName}>
                       {user.first_name} {user.last_name}
@@ -762,6 +734,7 @@ export function Navbar() {
             setPrivacy={setPrivacy}
             handleSubmit={handleSubmit}
             creating={creating}
+            onClose={() => setShowPostForm(false)}
             ref={fileInputRef}
           />
         </div>

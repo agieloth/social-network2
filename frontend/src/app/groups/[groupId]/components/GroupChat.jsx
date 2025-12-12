@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../../../contexts/AuthContext'
-import { useSharedWorker } from '../../../../contexts/SharedWorkerContext'
+import { useWorker } from '../../../../contexts/WorkerContext'
 import EmojiPicker from '../../../home/components/Emoji'
 import styles from './GroupChat.module.css'
 
@@ -12,7 +12,7 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
   const [error, setError] = useState(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const { user } = useAuth()
-  const { worker, sendWorkerMessage } = useSharedWorker()
+  const { worker } = useWorker()
   const inputRef = useRef()
 
   useEffect(() => {
@@ -23,19 +23,22 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
 
   useEffect(() => {
     if (worker) {
-      worker.port.onmessage = (event) => {
-        const message = event.data.data;
-        if (event.type === 'user_online' && message.groupId === parseInt(group?.id)) {
-          setOnlineUsers(prev => [...prev, message.from])
-        } else if (message.type === 'group' && message.groupId === parseInt(group?.id)) {
+      // Use regular Worker API instead of SharedWorker.port
+      worker.onmessage = (event) => {
+        const { type, data, message } = event.data;
+        const messageData = data || message;
+        
+        if (type === 'user_online' && messageData?.groupID === parseInt(group?.id)) {
+          setOnlineUsers(prev => [...prev, messageData.from])
+        } else if ((type === 'group_message' || messageData?.type === 'group_message') && messageData?.groupID === parseInt(group?.id)) {
           // Déterminer si c'est l'utilisateur courant
-          const isCurrentUser = message.from === user?.ID;
+          const isCurrentUser = messageData.from === user?.ID;
           
           setGroupChatMessages(prev => [...prev, {
-            ...message,
-            sender_name: isCurrentUser ? 'You' : (message.sender_nickname || 'User'),
+            ...messageData,
+            sender_name: isCurrentUser ? 'You' : (messageData.sender_nickname || 'User'),
             isCurrentUser: isCurrentUser,
-            isOnline: onlineUsers.includes(message.from)
+            isOnline: onlineUsers.includes(messageData.from)
           }])
         }
       }
@@ -72,8 +75,8 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
     if (!groupChatInput.trim() || !user?.ID) return
 
     const message = {
-      type: "group",
-      groupId: parseInt(group.id),
+      type: "group_message",
+      groupID: parseInt(group.id),
       from: user.ID,
       content: groupChatInput.trim(),
       timestamp: new Date().toISOString()
@@ -90,7 +93,10 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
     setGroupChatInput('')
     setShowEmojiPicker(false)
 
-    sendWorkerMessage(message)
+    // Send group message via Worker
+    if (worker) {
+      worker.postMessage({ type: 'SEND', message })
+    }
   }
 
   const handleChatKeyPress = (e) => {

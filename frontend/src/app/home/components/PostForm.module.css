@@ -10,6 +10,47 @@
   border: 1px solid #4a5568;
 }
 
+.formHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  margin-right: -0.5rem;
+}
+
+.formTitle {
+  margin: 0;
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: #a0aec0;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.closeButton:hover {
+  background-color: #4a5568;
+  color: #fff;
+}
+
+.closeButton:active {
+  background-color: #5a6578;
+}
+
 .textarea, .select, .fileInput {
   background-color: #2d3748;
   border: 1px solid #4a5568;
