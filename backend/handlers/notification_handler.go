@@ -22,8 +22,8 @@ func NewNotificationHandler(notificationService *services.NotificationService, s
 }
 
 func (h *NotificationHandler) GetUserNotifications(w http.ResponseWriter, r *http.Request) {
-	userID, ok := h.SessionService.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.SessionService.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -51,8 +51,8 @@ func (h *NotificationHandler) MarkNotificationSeen(w http.ResponseWriter, r *htt
 		return
 	}
 
-	userID, ok := h.SessionService.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.SessionService.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -79,8 +79,8 @@ func (h *NotificationHandler) DeleteNotification(w http.ResponseWriter, r *http.
 		return
 	}
 
-	userID, ok := h.SessionService.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.SessionService.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -93,8 +93,7 @@ func (h *NotificationHandler) DeleteNotification(w http.ResponseWriter, r *http.
 		return
 	}
 
-	err := h.NotificationService.DeleteNotification(userID, req.NotificationID)
-	if err != nil {
+	if err := h.NotificationService.DeleteNotification(userID, req.NotificationID); err != nil {
 		http.Error(w, "DB error", http.StatusInternalServerError)
 		return
 	}

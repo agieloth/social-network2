@@ -1,6 +1,9 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { useChat } from '../../../contexts/ChatContext'
+import { useMessageSidebar } from '../../../contexts/MessageSideBarContext'
+import { useAuth } from '../../../contexts/AuthContext'
 import styles from './MessageSidebar.module.css'
 
 export default function MessageSidebar({
@@ -9,49 +12,62 @@ export default function MessageSidebar({
   setShowMessages,
   openChat,
   currentUserId,
-  fetchChatUsers
+  fetchChatUsers,
+  ...props
 }) {
-  const pollingInterval = useRef(null);
+  // Use global chat context as primary, fallback to props for backward compatibility
+  const globalChat = useChat()
+  const { showMessages: globalShowMessages, setShowMessages: globalSetShowMessages } = useMessageSidebar()
+  const { user } = useAuth()
 
-  const chatableUsers = chatUsers?.filter(u => 
-    u?.id !== currentUserId && u?.can_chat
+  const finalShowMessages = showMessages ?? globalShowMessages
+  const finalSetShowMessages = setShowMessages ?? globalSetShowMessages
+  const finalChatUsers = chatUsers?.length > 0 ? chatUsers : globalChat.chatUsers
+  const finalCurrentUserId = currentUserId ?? user?.ID
+  const finalFetchChatUsers = fetchChatUsers ?? globalChat.fetchChatUsers
+  const finalOpenChat = openChat ?? globalChat.openChat
+
+  const pollingInterval = useRef(null)
+
+  const chatableUsers = finalChatUsers?.filter(u =>
+    u?.id !== finalCurrentUserId && u?.can_chat
   ) || []
-  
-  const nonChatableUsers = chatUsers?.filter(u => 
-    u?.id !== currentUserId && !u?.can_chat
+
+  const nonChatableUsers = finalChatUsers?.filter(u =>
+    u?.id !== finalCurrentUserId && !u?.can_chat
   ) || []
 
   useEffect(() => {
-    if (showMessages && fetchChatUsers) {
-      fetchChatUsers();
+    if (finalShowMessages && finalFetchChatUsers) {
+      finalFetchChatUsers()
     }
     return () => {
       if (pollingInterval.current) {
-        clearInterval(pollingInterval.current);
-        pollingInterval.current = null;
+        clearInterval(pollingInterval.current)
+        pollingInterval.current = null
       }
-    };
-  }, [showMessages, fetchChatUsers]);
+    }
+  }, [finalShowMessages, finalFetchChatUsers])
 
   const handleNonChatableUserClick = (user) => {
-    alert(`Vous ne pouvez pas discuter avec ${user?.full_name || 'cet utilisateur'}. Vous devez vous suivre mutuellement pour pouvoir discuter.`);
+    alert(`Vous ne pouvez pas discuter avec ${user?.full_name || 'cet utilisateur'}. Vous devez vous suivre mutuellement pour pouvoir discuter.`)
   }
 
   const handleManualRefresh = () => {
-    if (fetchChatUsers) {
-      fetchChatUsers();
+    if (finalFetchChatUsers) {
+      finalFetchChatUsers()
     }
-  };
+  }
 
   return (
     <div
-      className={`${styles.sidebar} ${showMessages ? styles.sidebarOpen : styles.sidebarClosed}`}
+      className={`${styles.sidebar} ${finalShowMessages ? styles.sidebarOpen : styles.sidebarClosed}`}
     >
       {/* Header */}
       <div className={styles.header}>
         <h2 className={styles.headerTitle}>Messages</h2>
         <button
-          onClick={() => setShowMessages(false)}
+          onClick={() => finalSetShowMessages(false)}
           className={styles.closeBtn}
         >
           ✖
@@ -69,7 +85,7 @@ export default function MessageSidebar({
               <div
                 key={u.id}
                 className={styles.userItem}
-                onClick={() => openChat(u)}
+                onClick={() => finalOpenChat(u)}
               >
                 <img
                   src={
@@ -92,7 +108,7 @@ export default function MessageSidebar({
         {chatableUsers.length === 0 && nonChatableUsers.length === 0 && (
           <div className={styles.emptyState}>
             <p className={styles.emptyText}>Aucun autre utilisateur</p>
-            <button 
+            <button
               onClick={handleManualRefresh}
               className={styles.refreshBtn}
             >

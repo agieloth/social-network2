@@ -42,10 +42,10 @@ func (h *Handler) ServeWS(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	log.Println("✅ WebSocket connection upgraded successfully")
 
 	// Try to get userID from session cookie first
-	userID, ok := h.session.GetUserIDFromSession(w, r)
+	userID, err := h.session.GetUserIDFromSession(r)
 
-	// If session not found, try to get from query parameter
-	if !ok || userID == 0 {
+	// If session not found or error, try to get from query parameter
+	if err != nil || userID == 0 {
 		userIDStr := r.URL.Query().Get("userId")
 		if userIDStr == "" {
 			log.Println("❌ Authentication required: No session and no userId parameter")

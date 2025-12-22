@@ -87,17 +87,25 @@ export default function ChatBox({ currentUser, recipient, onSendMessage, message
     if (relevantMessages.length === 0) return
 
     setAllMessages(prev => {
+      // Create a set of existing message IDs for deduplication
+      // Use a combination that's more robust: from, to, content, and timestamp rounded to seconds
       const existingIds = new Set(
-        prev.map(m => `${m.from}-${m.to}-${m.timestamp}-${m.content}`)
+        prev.map(m => {
+          const secondsTimestamp = Math.floor(new Date(m.timestamp).getTime() / 1000);
+          return `${m.from}:${m.to}:${m.content}:${secondsTimestamp}`;
+        })
       )
 
+      // Filter out duplicates
       const newMessages = relevantMessages.filter(msg => {
-        const msgId = `${msg.from}-${msg.to}-${msg.timestamp}-${msg.content}`
-        return !existingIds.has(msgId)
+        const secondsTimestamp = Math.floor(new Date(msg.timestamp).getTime() / 1000);
+        const msgId = `${msg.from}:${msg.to}:${msg.content}:${secondsTimestamp}`;
+        return !existingIds.has(msgId);
       })
 
       if (newMessages.length === 0) return prev
 
+      // Merge and sort
       const merged = [...prev, ...newMessages].sort((a, b) => 
         new Date(a.timestamp) - new Date(b.timestamp)
       )

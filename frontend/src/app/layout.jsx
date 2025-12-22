@@ -1,12 +1,14 @@
-// layout.js
 import { Geist, Geist_Mono } from "next/font/google";
 import { WorkerProvider } from "../contexts/WorkerContext";
 import { NavbarProvider } from "../contexts/NavBarContext";
 import { Navbar } from "./home/components/Navbar"
 import AuthProvider from "../contexts/AuthContext"
 import { MessageSidebarProvider } from "../contexts/MessageSideBarContext";
+import { ChatProvider } from "../contexts/ChatContext";
 import MessageSidebar from "./messages/components/MessageSidebar";
+import ChatBoxContainer from "./messages/components/ChatBoxContainer";
 import { WorkerInitializer } from "../components/WorkerInitializer";
+import { ChatInitializer } from "../components/ChatInitializer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,14 +32,18 @@ export default function RootLayout({ children }) {
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider>
           <WorkerProvider>
-            <NavbarProvider>
-              <MessageSidebarProvider>
-                <WorkerInitializer />
-                <Navbar />
-                <MessageSidebar />
-                {children}
-              </MessageSidebarProvider>
-            </NavbarProvider>
+            <ChatProvider>
+              <NavbarProvider>
+                <MessageSidebarProvider>
+                  <WorkerInitializer />
+                  <ChatInitializer />
+                  <Navbar />
+                  <MessageSidebar />
+                  <ChatBoxContainer />
+                  {children}
+                </MessageSidebarProvider>
+              </NavbarProvider>
+            </ChatProvider>
           </WorkerProvider>
         </AuthProvider>
       </body>

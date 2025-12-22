@@ -1,10 +1,19 @@
 // src/hooks/useNotifications.js
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useNavbar } from '../../../contexts/NavBarContext'
 
 export function useNotifications(user, sendMessage) {
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
+  // try to get global unread setter from NavBarContext (may throw if provider missing)
+  let setGlobalUnread = null
+  try {
+    const navbar = useNavbar()
+    setGlobalUnread = navbar.setUnreadCount
+  } catch (e) {
+    setGlobalUnread = null
+  }
   const notificationsRef = useRef(null)
   const notificationButtonRef = useRef(null)
 
@@ -25,7 +34,9 @@ export function useNotifications(user, sendMessage) {
       }
 
       setNotifications(uniqueNotifs)
-      setUnreadCount(uniqueNotifs.filter(n => !n.seen).length)
+      const count = uniqueNotifs.filter(n => !n.seen).length
+      setUnreadCount(count)
+      if (setGlobalUnread) setGlobalUnread(count)
     } catch (err) {
       console.error("Erreur récupération notifications", err)
     }
@@ -46,6 +57,7 @@ export function useNotifications(user, sendMessage) {
       })
       await fetchNotifications()
       setUnreadCount(0)
+      if (setGlobalUnread) setGlobalUnread(0)
     }
   }, [showNotifications, fetchNotifications])
 
@@ -135,7 +147,11 @@ export function useNotifications(user, sendMessage) {
         if (type === 'notification' || type === 'follow_request' ||
           type === 'follow_request_response' || type === 'follow_request_cancelled') {
           setNotifications(prev => [message, ...prev])
-          setUnreadCount(prev => prev + 1)
+          setUnreadCount(prev => {
+            const next = prev + 1
+            if (setGlobalUnread) setGlobalUnread(next)
+            return next
+          })
         }
       }
 

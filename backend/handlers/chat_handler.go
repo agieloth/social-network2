@@ -3,8 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"social/services"
 	"strconv"
+
+	"social/services"
 )
 
 type ChatHandler struct {
@@ -21,8 +22,8 @@ func NewChatHandler(chatService *services.ChatService, sessionService *services.
 }
 
 func (h *ChatHandler) GetAllChatUsers(w http.ResponseWriter, r *http.Request) {
-	requesterID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok {
+	requesterID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -43,8 +44,8 @@ func (h *ChatHandler) GetChatHistory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}

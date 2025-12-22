@@ -1,3 +1,4 @@
+
 // public/worker.js
 console.log("🚀 Worker script loaded!");
 

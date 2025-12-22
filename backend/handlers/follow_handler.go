@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"social/hub"
-	"social/services"
 	"strconv"
 	"strings"
+
+	"social/hub"
+	"social/services"
 )
 
 type FollowHandler struct {
@@ -26,8 +27,8 @@ func (h *FollowHandler) SendFollowRequest(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	userID, ok := h.session.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -68,8 +69,8 @@ func (h *FollowHandler) GetFollowStatus(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	followerID, ok := h.session.GetUserIDFromSession(w, r)
-	if !ok {
+	followerID, err := h.session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -92,8 +93,8 @@ func (h *FollowHandler) AcceptFollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := h.session.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -124,8 +125,8 @@ func (h *FollowHandler) RejectFollow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := h.session.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -149,24 +150,23 @@ func (h *FollowHandler) RejectFollow(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FollowHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
-	sessionUserID, ok := h.session.GetUserIDFromSession(w, r)
-	if !ok {
+	sessionUserID, err := h.session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	var payload struct {
 		FollowedID int `json:"followed_id"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		fmt.Println("called : ", err)
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	
-	err := h.Service.UnfollowUser(sessionUserID, payload.FollowedID)
-	if err != nil {
+
+	if err := h.Service.UnfollowUser(sessionUserID, payload.FollowedID); err != nil {
 		fmt.Println("called : ", err)
 		http.Error(w, "Error unfollowing user", http.StatusInternalServerError)
 		return
@@ -228,8 +228,8 @@ func (h *FollowHandler) GetFollowingHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *FollowHandler) GetRecipientsHandler(w http.ResponseWriter, r *http.Request) {
-	userID, ok := h.session.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}

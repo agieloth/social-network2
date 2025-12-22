@@ -24,7 +24,6 @@ func (s *SessionRepo) ValidateSession(r *http.Request, db *sql.DB) (int, error) 
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
 		if err == http.ErrNoCookie {
-			fmt.Println("ysf", err)
 			return 0, fmt.Errorf("no session cookie")
 		}
 		return 0, fmt.Errorf("error reading session cookie: %v", err)
@@ -35,7 +34,6 @@ func (s *SessionRepo) ValidateSession(r *http.Request, db *sql.DB) (int, error) 
 	query := `SELECT userId, expiresAt FROM sessions WHERE id = ?`
 	err = db.QueryRow(query, sessionID).Scan(&userID, &expiresAt)
 	if err != nil {
-		fmt.Println("Error querying session:", err)
 		return 0, fmt.Errorf("session not found: %v", err)
 	}
 	if time.Now().After(expiresAt) {
@@ -53,7 +51,6 @@ func (s *SessionRepo) CreateSession(userID int) (string, time.Time, error) {
 		log.Println("Error storing session in database:", err)
 		return "", time.Time{}, err
 	}
-	fmt.Println("Session created successfully:", sessionID)
 	return sessionID, expiration, nil
 }
 
@@ -62,5 +59,4 @@ func (s *SessionRepo) GetUserNicknameById(userId int) string {
 	query := `SELECT nickname FROM users WHERE id = ?`
 	s.db.QueryRow(query, userId).Scan(&userNickname)
 	return userNickname
-
 }

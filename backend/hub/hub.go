@@ -89,8 +89,21 @@ func (h *Hub) Run() {
 				} else {
 					fmt.Printf("⚠️ Recipient user %d not connected\n", msg.To)
 				}
-				// NOTE: We don't send confirmation back to sender because the frontend
-				// already handles showing the message locally when it's sent
+
+				// IMPORTANT: Also send confirmation back to sender for real-time display
+				// This ensures the sender sees the message immediately
+				if sender, ok := h.Clients[msg.From]; ok {
+					select {
+					case sender.Send <- msgBytes:
+						fmt.Printf("✅ Private message confirmation sent to sender user %d\n", msg.From)
+					default:
+						fmt.Printf("⚠️ Failed to send confirmation to sender %d\n", msg.From)
+						close(sender.Send)
+						delete(h.Clients, sender.ID)
+					}
+				} else {
+					fmt.Printf("⚠️ Sender user %d not connected (no confirmation sent)\n", msg.From)
+				}
 
 			case "group_message":
 				// Process group message
@@ -107,31 +120,31 @@ func (h *Hub) Run() {
 				}
 				fmt.Println("member", members)
 
-				// Broadcast to all connected group members except sender
+				// Broadcast to all connected group members (including sender)
 				for _, memberID := range members {
-					if memberID == msg.From {
-						continue // Skip sender
-					}
-
 					if client, ok := h.Clients[memberID]; ok {
-						msg.To = memberID
-						msgBytes, err := json.Marshal(msg)
+						msgCopy := msg
+						msgCopy.To = memberID
+						msgBytesToSend, err := json.Marshal(msgCopy)
 						if err != nil {
-							fmt.Println("❌ Failed to marshal message:", err)
+							fmt.Println("❌ Failed to marshal message for member:", err)
 							continue
 						}
 						select {
-						case client.Send <- msgBytes:
-							fmt.Println("nothing", string(msgBytes))
+						case client.Send <- msgBytesToSend:
+							fmt.Println("✅ Message sent to user", memberID)
 							// Message sent successfully
 						default:
 							// Handle full channel or disconnected client
+							fmt.Printf("⚠️ Failed to send to user %d (channel full)\n", memberID)
 							close(client.Send)
-							delete(h.Clients, client.ID)
+							delete(h.Clients, memberID)
 						}
+					} else {
+						fmt.Printf("⚠️ User %d not connected\n", memberID)
 					}
 				}
-				fmt.Printf("✅ Group message broadcast to %d members of group %d\n", len(members)-1, msg.GroupID)
+				fmt.Printf("✅ Group message broadcast to %d members of group %d\n", len(members), msg.GroupID)
 
 			default:
 				fmt.Printf("❌ Unknown message type: %s\n", msg.Type)

@@ -4,22 +4,13 @@
 import { useEffect, useState, forwardRef } from 'react'
 import styles from './PostForm.module.css'
 
-const PostForm = forwardRef(function PostForm(props, fileInputRef) {
-  const { content, setContent, image, setImage, privacy, setPrivacy, handleSubmit, creating, onClose } = props;
+const PostForm = forwardRef(function PostForm(
+  { content, setContent, image, setImage, privacy, setPrivacy, handleSubmit, creating, fileInputRef: fileInputRefProp, onClose, isGroupPost, error, success },
+  fileInputRef
+) {
 
   const [recipients, setRecipients] = useState([])
   const [recipientIds, setRecipientIds] = useState([])
-
-  // Fonction de fermeture par défaut si onClose n'est pas fourni
-  const handleClose = () => {
-    console.log('Close button clicked, onClose:', typeof onClose);
-    if (onClose && typeof onClose === 'function') {
-      console.log('Calling onClose...');
-      onClose();
-    } else {
-      console.warn('onClose prop not provided or not a function');
-    }
-  };
 
   // Charger les abonnés quand privacy devient "custom"
   useEffect(() => {
@@ -56,20 +47,17 @@ const PostForm = forwardRef(function PostForm(props, fileInputRef) {
     setRecipientIds([]) // reset après publication
   }
 
+  // support callers that pass ref via prop or forwarded ref
+  const inputRef = fileInputRefProp || fileInputRef
+
 
   return (
     <form onSubmit={onSubmit} className={styles.form}>
-      <div className={styles.formHeader}>
-        <h3 className={styles.formTitle}>Créer un post</h3>
-        <button
-          type="button"
-          onClick={handleClose}
-          className={styles.closeButton}
-          aria-label="Close post form"
-        >
-          ✕
+      {onClose && (
+        <button type="button" aria-label="Close" className={styles.closeButton} onClick={onClose}>
+          ×
         </button>
-      </div>
+      )}
       <textarea
         placeholder="Exprimez-vous..."
         value={content}
@@ -81,7 +69,7 @@ const PostForm = forwardRef(function PostForm(props, fileInputRef) {
       <input
         type="file"
         accept="image/*"
-        ref={fileInputRef}
+        ref={inputRef}
         className={styles.fileInput}
         onChange={(e) => setImage(e.target.files[0])}
       />

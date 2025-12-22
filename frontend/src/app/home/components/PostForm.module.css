@@ -1,5 +1,6 @@
 .form {
   background-color: #1a202c;
+  position: relative;
   padding: 1rem;
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
@@ -10,45 +11,38 @@
   border: 1px solid #4a5568;
 }
 
-.formHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  margin-right: -0.5rem;
-}
-
-.formTitle {
-  margin: 0;
-  color: #fff;
-  font-size: 1.125rem;
-  font-weight: 600;
-}
-
 .closeButton {
-  background: none;
-  border: none;
-  color: #a0aec0;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.25rem;
-  width: 2.5rem;
-  height: 2.5rem;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.25rem;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+  font-size: 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 150ms ease, transform 80ms ease, box-shadow 150ms ease;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.6);
+  backdrop-filter: blur(4px);
 }
 
 .closeButton:hover {
-  background-color: #4a5568;
-  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
 }
 
 .closeButton:active {
-  background-color: #5a6578;
+  transform: translateY(0);
+}
+
+.closeButton:focus {
+  outline: 2px solid rgba(37, 99, 235, 0.28);
+  outline-offset: 2px;
 }
 
 .textarea, .select, .fileInput {

@@ -51,38 +51,20 @@ export function Navbar() {
     const value = e.target.value;
     setSearch(value);
 
-    // Clear results if search is empty
-    if (value.trim().length === 0) {
-      setResults([]);
-      return;
-    }
-
-    // Only search if query is at least 1 character
-    if (value.trim().length < 1) {
-      return;
-    }
-
-    try {
-      const res = await fetch(`http://localhost:8080/api/search?query=${encodeURIComponent(value)}`, {
-        credentials: "include",
-      });
-      if (!res.ok) {
-        console.warn("Search failed:", res.status);
-        setResults([]);
-        return;
+    if (value.length > 1) {
+      try {
+        const res = await fetch(`http://localhost:8080/api/search?query=${value}`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Failed to search users");
+        const data = await res.json();
+        setResults(data);
+      } catch (err) {
+        console.error("Error searching users:", err);
       }
-      const data = await res.json();
-      setResults(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Error searching users:", err);
+    } else {
       setResults([]);
     }
-  };
-
-  const handleSelectUser = (userId) => {
-    router.push(`/profile/${userId}`);
-    setSearch('');
-    setResults([]);
   };
 
   const handleSubmit = async (e, selectedRecipientIds = []) => {
@@ -238,7 +220,6 @@ export function Navbar() {
         credentials: 'include',
       });
       setNotifications(prev => prev.filter(n => n.id !== notifId));
-      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
       console.error('Error accepting follow:', err);
     }
@@ -269,7 +250,6 @@ export function Navbar() {
 
       if (rejectRes.ok && seenRes.ok && deleteRes.ok) {
         setNotifications(prev => prev.filter(n => n.id !== notifId));
-        setUnreadCount(prev => Math.max(0, prev - 1));
       } else {
         console.error('One or more requests failed');
       }
@@ -302,7 +282,6 @@ export function Navbar() {
           credentials: 'include',
         });
         setNotifications(prev => prev.filter(n => n.id !== notifId));
-        setUnreadCount(prev => Math.max(0, prev - 1));
       }
     } catch (err) {
       console.error('Error approving request:', err)
@@ -332,7 +311,6 @@ export function Navbar() {
           credentials: 'include',
         });
         setNotifications(prev => prev.filter(n => n.id !== notifId));
-        setUnreadCount(prev => Math.max(0, prev - 1));
       }
     } catch (err) {
       console.error('Error declining request:', err)
@@ -366,7 +344,6 @@ export function Navbar() {
         credentials: 'include',
       });
       setNotifications(prev => prev.filter(n => n.id !== notifId));
-      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
       console.error('Error submitting response:', err);
     }
@@ -398,7 +375,6 @@ export function Navbar() {
 
         // Remove the notification from state
         setNotifications(prev => prev.filter(n => n.id !== notifId));
-        setUnreadCount(prev => Math.max(0, prev - 1));
       } else {
         console.error('Failed to accept invitation');
       }
@@ -433,7 +409,6 @@ export function Navbar() {
 
         // Remove the notification from state
         setNotifications(prev => prev.filter(n => n.id !== notifId));
-        setUnreadCount(prev => Math.max(0, prev - 1));
       } else {
         alert(res.status)
         console.error('Failed to decline invitation');
@@ -497,9 +472,13 @@ export function Navbar() {
               <div className={styles.searchResults}>
                 {results.map((user) => (
                   <div
-                    key={user.id || user.ID}
+                    key={user.id}
                     className={styles.searchResultItem}
-                    onClick={() => handleSelectUser(user.id || user.ID)}
+                    onClick={() => {
+                      router.push(`/profile/${user.id}`);
+                      setSearch('');
+                      setResults([]);
+                    }}
                   >
                     <p className={styles.searchResultName}>
                       {user.first_name} {user.last_name}
@@ -734,8 +713,8 @@ export function Navbar() {
             setPrivacy={setPrivacy}
             handleSubmit={handleSubmit}
             creating={creating}
-            onClose={() => setShowPostForm(false)}
             ref={fileInputRef}
+                onClose={() => setShowPostForm(false)}
           />
         </div>
       )}

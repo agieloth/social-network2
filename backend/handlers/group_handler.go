@@ -9,14 +9,14 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"social/hub"
-	"social/models"
-	"social/services"
-	"social/utils"
 	"strconv"
 	"strings"
 	"time"
 
+	"social/hub"
+	"social/models"
+	"social/services"
+	"social/utils"
 	// "github.com/go-chi/chi/v5"
 )
 
@@ -61,9 +61,9 @@ func (h *GroupHandler) GroupRouterHandler(w http.ResponseWriter, r *http.Request
 	suffix := strings.Join(pathParts[3:], "/")
 
 	if suffix == "members" && method == http.MethodGet {
-        h.GetGroupMembersHandler(w, r)
-        return
-    }
+		h.GetGroupMembersHandler(w, r)
+		return
+	}
 
 	// Handle posts/{postID}/comments routes first
 	if len(pathParts) >= 5 && pathParts[3] == "posts" {
@@ -146,39 +146,38 @@ func (h *GroupHandler) GroupRouterHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (h *GroupHandler) GetGroupMembersHandler(w http.ResponseWriter, r *http.Request) {
-    // Extraire le groupID de l'URL
-    groupIDStr := strings.TrimPrefix(r.URL.Path, "/api/groups/")
-    groupIDStr = strings.TrimSuffix(groupIDStr, "/members")
-    
-    groupID, err := strconv.Atoi(groupIDStr)
-    if err != nil {
-        http.Error(w, "Invalid group ID", http.StatusBadRequest)
-        return
-    }
+	// Extraire le groupID de l'URL
+	groupIDStr := strings.TrimPrefix(r.URL.Path, "/api/groups/")
+	groupIDStr = strings.TrimSuffix(groupIDStr, "/members")
 
-    // Appeler le service
-    members, err := h.Service.GetGroupMembers(groupID)
-    if err != nil {
-        if strings.Contains(err.Error(), "not found") {
-            http.Error(w, "Group not found", http.StatusNotFound)
-            return
-        }
-        http.Error(w, "Failed to get group members", http.StatusInternalServerError)
-        return
-    }
+	groupID, err := strconv.Atoi(groupIDStr)
+	if err != nil {
+		http.Error(w, "Invalid group ID", http.StatusBadRequest)
+		return
+	}
 
-    // Retourner la réponse JSON
-    w.Header().Set("Content-Type", "application/json")
-    if err := json.NewEncoder(w).Encode(members); err != nil {
-        http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-    }
+	// Appeler le service
+	members, err := h.Service.GetGroupMembers(groupID)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			http.Error(w, "Group not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Failed to get group members", http.StatusInternalServerError)
+		return
+	}
+
+	// Retourner la réponse JSON
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(members); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+	}
 }
-
 
 func (h *GroupHandler) GetGroupChat(w http.ResponseWriter, r *http.Request) {
 	// Get user ID from session
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -209,8 +208,12 @@ func (h *GroupHandler) GetGroupChat(w http.ResponseWriter, r *http.Request) {
 
 	// Return messages
 	w.Header().Set("Content-Type", "application/json")
+	if messages == nil {
+		messages = []models.GroupMessage{}
+	}
 	json.NewEncoder(w).Encode(messages)
 }
+
 func (h *GroupHandler) GetGroupByIDHandler(w http.ResponseWriter, r *http.Request) {
 	pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	groupID, err := strconv.Atoi(pathParts[len(pathParts)-1])
@@ -219,8 +222,8 @@ func (h *GroupHandler) GetGroupByIDHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -250,8 +253,8 @@ func (h *GroupHandler) CheckGroupAccessHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -284,8 +287,8 @@ func (h *GroupHandler) GetPendingRequestsHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -314,8 +317,8 @@ func (h *GroupHandler) JoinGroupRequestHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -361,8 +364,8 @@ func (h *GroupHandler) JoinGroupRequestHandler(w http.ResponseWriter, r *http.Re
 }
 
 func (h *GroupHandler) AcceptGroupInviteHandler(w http.ResponseWriter, r *http.Request) {
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -392,8 +395,8 @@ func (h *GroupHandler) AcceptGroupInviteHandler(w http.ResponseWriter, r *http.R
 }
 
 func (h *GroupHandler) RefuseGroupInviteHandler(w http.ResponseWriter, r *http.Request) {
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -423,8 +426,8 @@ func (h *GroupHandler) RefuseGroupInviteHandler(w http.ResponseWriter, r *http.R
 }
 
 func (h *GroupHandler) InviteToGroupHandler(w http.ResponseWriter, r *http.Request) {
-	creatorID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || creatorID == 0 {
+	creatorID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || creatorID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -462,8 +465,8 @@ func (h *GroupHandler) InviteToGroupHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *GroupHandler) ApproveRequestHandler(w http.ResponseWriter, r *http.Request) {
-	creatorID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || creatorID == 0 {
+	creatorID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || creatorID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -500,8 +503,8 @@ func (h *GroupHandler) ApproveRequestHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *GroupHandler) DeclineRequestHandler(w http.ResponseWriter, r *http.Request) {
-	creatorID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || creatorID == 0 {
+	creatorID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || creatorID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -547,8 +550,8 @@ func (h *GroupHandler) GetNonGroupMembersHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -564,8 +567,8 @@ func (h *GroupHandler) GetNonGroupMembersHandler(w http.ResponseWriter, r *http.
 }
 
 func (h *GroupHandler) GetGroupPostsHandler(w http.ResponseWriter, r *http.Request) {
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		log.Println("🔒 Unauthorized user")
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -601,14 +604,13 @@ func (h *GroupHandler) CreateGroupPostHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	err := r.ParseMultipartForm(10 << 20) // 10MB max
-	if err != nil {
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
 		http.Error(w, "Error parsing form", http.StatusBadRequest)
 		return
 	}
@@ -667,8 +669,8 @@ func (h *GroupHandler) CreateGroupPostHandler(w http.ResponseWriter, r *http.Req
 }
 
 func (h *GroupHandler) GetGroupPostCommentsHandler(w http.ResponseWriter, r *http.Request) {
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -707,8 +709,8 @@ func (h *GroupHandler) CreateGroupPostCommentHandler(w http.ResponseWriter, r *h
 		return
 	}
 
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -743,8 +745,8 @@ func (h *GroupHandler) CreateGroupPostCommentHandler(w http.ResponseWriter, r *h
 }
 
 func (h *GroupHandler) GetGroupEventsHandler(w http.ResponseWriter, r *http.Request) {
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -774,8 +776,8 @@ func (h *GroupHandler) CreateGroupEventHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -849,8 +851,8 @@ func (h *GroupHandler) HandleGroupMessage(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -895,8 +897,8 @@ func (h *GroupHandler) HandleGroupMessage(w http.ResponseWriter, r *http.Request
 }
 
 func (h *GroupHandler) GetGroups(w http.ResponseWriter, r *http.Request) {
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -922,8 +924,8 @@ func (h *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -952,8 +954,8 @@ func (h *GroupHandler) HandleEventVote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := h.Session.GetUserIDFromSession(w, r)
-	if !ok || userID == 0 {
+	userID, err := h.Session.GetUserIDFromSession(r)
+	if err != nil || userID == 0 {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}

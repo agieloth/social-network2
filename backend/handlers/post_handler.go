@@ -33,8 +33,8 @@ func (h *PostHandler) GetUserPostsHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	currentUser, ok := h.session.GetUserIDFromSession(w, r)
-	if !ok {
+	currentUser, err := h.session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -66,14 +66,13 @@ func (h *PostHandler) PostsHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("here")
-	userID, ok := h.session.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	err := r.ParseMultipartForm(10 << 20) // 10 MB
-	if err != nil {
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
 		http.Error(w, "Invalid form", http.StatusBadRequest)
 		return
 	}
@@ -129,8 +128,8 @@ func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *PostHandler) GetPostsHandler(w http.ResponseWriter, r *http.Request) {
-	userID, ok := h.session.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -152,15 +151,14 @@ func (h *PostHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userID, ok := h.session.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.session.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Non autorisé", http.StatusUnauthorized)
 		return
 	}
 
 	// Parse multipart form (required before accessing FormValue or FormFile)
-	err := r.ParseMultipartForm(10 << 20) // 10MB limit
-	if err != nil {
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
 		http.Error(w, "Formulaire invalide", http.StatusBadRequest)
 		return
 	}

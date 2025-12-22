@@ -1,11 +1,11 @@
 package services
 
 import (
-	"fmt"
 	"net/http"
+	"time"
+
 	"social/db/sqlite"
 	"social/repositories"
-	"time"
 )
 
 type SessionService struct {
@@ -16,22 +16,12 @@ func NewSessionService(sessionRepo *repositories.SessionRepo) *SessionService {
 	return &SessionService{sessionRepo: sessionRepo}
 }
 
-func (s *SessionService) GetUserIDFromSession(w http.ResponseWriter, r *http.Request) (int, bool) {
+func (s *SessionService) GetUserIDFromSession(r *http.Request) (int, error) {
 	id, err := s.sessionRepo.ValidateSession(r, sqlite.DB)
 	if err != nil {
-		fmt.Println("Error validating session:", err)
-		http.SetCookie(w, &http.Cookie{
-			Name:     "session_id",
-			Value:    fmt.Sprintf("%v", "expired"),
-			Path:     "/",
-			HttpOnly: true,
-			SameSite: http.SameSiteLaxMode,
-			Secure:   false, // use true if using https
-		})
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return 0, false
+		return 0, err
 	}
-	return id, true
+	return id, nil
 }
 
 func (s *SessionService) GetUserNicknameById(userId int) string {

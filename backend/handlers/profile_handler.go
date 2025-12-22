@@ -6,11 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"social/hub"
-	"social/services"
-	"social/models"
 	"strconv"
 	"strings"
+
+	"social/hub"
+	"social/models"
+	"social/services"
 )
 
 type ProfileHandler struct {
@@ -25,8 +26,8 @@ func NewProfileHandler(service *services.ProfileService, sessionService *service
 
 func (h *ProfileHandler) ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	// Step 1: Get user ID from session token
-	userID, ok := h.sessionService.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.sessionService.GetUserIDFromSession(r)
+	if err != nil {
 		// Clear the session cookie
 		http.SetCookie(w, &http.Cookie{
 			Name:     "session_token",
@@ -68,8 +69,8 @@ func (h *ProfileHandler) GetUserByIDHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	// 2. Get requester ID from session
-	requesterID, ok := h.sessionService.GetUserIDFromSession(w, r)
-	if !ok {
+	requesterID, err := h.sessionService.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -109,8 +110,8 @@ func (h *ProfileHandler) TogglePrivacy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := h.sessionService.GetUserIDFromSession(w, r)
-	if !ok {
+	userID, err := h.sessionService.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Utilisateur non authentifié", http.StatusUnauthorized)
 		return
 	}
@@ -121,8 +122,7 @@ func (h *ProfileHandler) TogglePrivacy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.profileService.TogglePrivacy(userID, req.IsPrivate)
-	if err != nil {
+	if err := h.profileService.TogglePrivacy(userID, req.IsPrivate); err != nil {
 		http.Error(w, "Erreur base de données", http.StatusInternalServerError)
 		return
 	}
@@ -130,18 +130,17 @@ func (h *ProfileHandler) TogglePrivacy(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *ProfileHandler) GetMe(w http.ResponseWriter, r *http.Request){
-	userId, ok := h.sessionService.GetUserIDFromSession(w, r)
-	if !ok {
+func (h *ProfileHandler) GetMe(w http.ResponseWriter, r *http.Request) {
+	userId, err := h.sessionService.GetUserIDFromSession(r)
+	if err != nil {
 		http.Error(w, "Utilisateur non authentifié", http.StatusUnauthorized)
 		return
 	}
 
 	response := map[string]interface{}{
-        "id": userId,
+		"id": userId,
 	}
 
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(response)
-
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
