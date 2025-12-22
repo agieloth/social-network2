@@ -66,6 +66,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem; /* space-x-3 */
+  cursor: pointer;
 }
 
 .button {
@@ -74,24 +75,29 @@
   transition: background-color 0.2s;
   cursor: pointer;
   border: none;
+  cursor: pointer;
 }
 
 .button-cancel {
   background-color: #4b5563; /* bg-gray-600 */
   color: #ffffff; /* text-white */
+  cursor: pointer;
 }
 
 .button-cancel:hover {
   background-color: #374151; /* hover:bg-gray-700 */
+  cursor: pointer;
 }
 
 .button-submit {
   background-color: #2563eb; /* bg-blue-600 */
   color: #ffffff; /* text-white */
+  cursor: pointer;
 }
 
 .button-submit:hover {
   background-color: #1d4ed8; /* hover:bg-blue-700 */
+  cursor: pointer;
 }
 
 .button:disabled {

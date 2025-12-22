@@ -86,6 +86,7 @@
 
 .actionButton {
   position: relative;
+  cursor: pointer;
 }
 
 .actionIcon {
@@ -101,6 +102,7 @@
 .notificationButton {
   position: relative;
   padding: 0.25rem;
+  cursor: pointer;
 }
 
 .notificationCount {
@@ -151,6 +153,7 @@
 
 .notificationsCloseButton {
   color: #a0aec0;
+  cursor: pointer;
 }
 
 .notificationsCloseButton:hover {
@@ -216,6 +219,7 @@
 
 .acceptButton {
   background-color: #16a34a;
+  cursor: pointer;
 }
 
 .acceptButton:hover {
@@ -224,6 +228,7 @@
 
 .rejectButton {
   background-color: #dc2626;
+  cursor: pointer;
 }
 
 .rejectButton:hover {
@@ -299,6 +304,7 @@
   padding: 0.25rem;
   transition-duration: 300ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
 .privacyTogglePrivate {
@@ -329,6 +335,7 @@
   width: 100%;
   font-size: 0.875rem;
   line-height: 1.25rem;
+  cursor: pointer;
 }
 
 .profileButton:hover {

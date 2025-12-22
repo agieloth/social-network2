@@ -6,6 +6,7 @@
   border-radius: 0.5rem; /* rounded-lg */
   transition: background-color 0.2s;
   margin-bottom: 1rem;
+  cursor: pointer;
 }
 
 .createPostButton:hover {
@@ -100,6 +101,7 @@
   color: white;
   border-radius: 0.25rem; /* rounded */
   transition: background-color 0.2s;
+  cursor: pointer;
 }
 
 .commentButton:hover {

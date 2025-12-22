@@ -6,6 +6,7 @@
   border-radius: 0.5rem;
   transition: background-color 0.2s;
   margin-bottom: 1rem;
+  cursor: pointer;
 }
 
 .inviteButton:hover {

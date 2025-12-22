@@ -5,10 +5,12 @@
   color: white;
   border-radius: 0.5rem; /* rounded-lg */
   transition: background-color 0.2s;
+  cursor: pointer;
 }
 
 .createEventButton:hover {
   background-color: #1d4ed8; /* hover:bg-blue-700 */
+  cursor: pointer;
 }
 
 .eventsList {
@@ -96,12 +98,14 @@
   display: flex;
   align-items: center;
   gap: 1rem; /* gap-4 */
+  cursor: pointer;
 }
 
 .voteButtonContainer {
   display: flex;
   align-items: center;
   gap: 0.5rem; /* gap-2 */
+  cursor: pointer;
 }
 
 .voteButton {
@@ -115,22 +119,26 @@
   border: 1px solid rgba(75, 85, 99, 0.5); /* border-gray-600/50 */
   background-color: rgba(55, 65, 81, 0.5); /* bg-gray-700/50 */
   color: #d1d5db; /* text-gray-300 */
+  cursor: pointer;
 }
 
 .voteButton:hover {
   background-color: #374151; /* hover:bg-gray-700 */
+  cursor: pointer;
 }
 
 .voteButton.active.going {
   background-color: rgba(22, 163, 74, 0.2); /* bg-green-600/20 */
   color: #4ade80; /* text-green-400 */
   border-color: rgba(22, 163, 74, 0.5); /* border-green-600/50 */
+  cursor: pointer;
 }
 
 .voteButton.active.notGoing {
   background-color: rgba(220, 38, 38, 0.2); /* bg-red-600/20 */
   color: #f87171; /* text-red-400 */
   border-color: rgba(220, 38, 38, 0.5); /* border-red-600/50 */
+  cursor: pointer;
 }
 
 .voteIcon {
@@ -188,6 +196,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem; /* gap-2 */
+  cursor: pointer;
 }
 
 .emptyStateButton:hover {

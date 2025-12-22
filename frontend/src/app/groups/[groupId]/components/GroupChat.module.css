@@ -57,6 +57,7 @@
   color: #9ca3af; /* text-gray-400 */
   padding: 0.25rem; /* p-1 */
   border-radius: 9999px; /* rounded-full */
+  cursor: pointer;
 }
 
 .closeButton:hover {
@@ -166,6 +167,7 @@
   color: white;
   border-radius: 0.375rem; /* rounded */
   transition: background-color 0.2s;
+  cursor: pointer;
 }
 
 .sendButton:hover {

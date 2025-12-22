@@ -60,6 +60,7 @@
   border-radius: 0.375rem;
   transition-property: background-color;
   transition-duration: 200ms;
+  cursor: pointer;
 }
 
 .button:hover {
