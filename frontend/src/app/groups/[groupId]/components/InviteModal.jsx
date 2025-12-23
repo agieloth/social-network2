@@ -13,7 +13,7 @@ export default function InviteModal({ showInviteForm, setShowInviteForm, groupId
 
   const fetchInvitableMembers = async () => {
     try {
-      const res = await fetch(`/api/groups/${groupId}/invitable_members`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/invitable_members`, {
         credentials: 'include'
       })
       if (!res.ok) throw new Error('Failed to fetch invitable members')
@@ -27,7 +27,7 @@ export default function InviteModal({ showInviteForm, setShowInviteForm, groupId
   const handleInviteMember = async (memberId) => {
     setInvitingMemberId(memberId)
     try {
-      const res = await fetch(`/api/groups/${groupId}/invite`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/invite`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

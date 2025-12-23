@@ -16,7 +16,7 @@ export default function CreateGroupModal({ onClose }) {
     setError('')
 
     try {
-      const res = await fetch('/api/groups', {
+      const res = await fetch('http://localhost:8080/api/groups', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

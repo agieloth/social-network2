@@ -1,6 +1,6 @@
 export default function InviteResponse({ groupId }) {
   const handleAccept = async () => {
-    await fetch(`/api/groups/${groupId}/invite/accept`, {
+    await fetch(`http://localhost:8080/api/groups/${groupId}/invite/accept`, {
       method: 'POST',
       credentials: 'include',
     })
@@ -9,7 +9,7 @@ export default function InviteResponse({ groupId }) {
   }
 
   const handleReject = async () => {
-    await fetch(`/api/groups/${groupId}/invite/reject`, {
+    await fetch(`http://localhost:8080/api/groups/${groupId}/invite/reject`, {
       method: 'POST',
       credentials: 'include',
     })

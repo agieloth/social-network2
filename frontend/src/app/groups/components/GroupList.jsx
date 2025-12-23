@@ -11,7 +11,7 @@ export default function GroupList() {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const res = await fetch('/api/groups', {
+        const res = await fetch('http://localhost:8080/api/groups', {
           credentials: 'include'
         })
         const data = await res.json()

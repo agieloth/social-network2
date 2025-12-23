@@ -28,7 +28,7 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
 
   const fetchGroupMembers = async () => {
     try {
-      const res = await fetch(`/api/groups/${groupId}/members`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/members`, {
         credentials: 'include'
       })
       if (res.ok) {
@@ -138,7 +138,7 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/groups/${groupId}/chat`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/chat`, {
         credentials: 'include'
       })
       if (!res.ok) throw new Error('Failed to fetch messages')

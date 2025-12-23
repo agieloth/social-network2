@@ -127,7 +127,7 @@ export default function UserProfilePopup({
           // ✅ Si c'était une demande en attente, supprimer la notification côté frontend
           if (followStatus === 'pending') {
             try {
-              await fetch('/api/notifications/cancel-request', {
+              await fetch('http://localhost:8080/api/notifications/cancel-request', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

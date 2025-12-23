@@ -15,7 +15,9 @@ export default function PostsTab({ group, showPostForm, setShowPostForm }) {
     const fetchPosts = async () => {
       setLoadingPosts(true) // NEW: Start loading
       try {
-        const res = await fetch(`/api/groups/${group.id}/posts`)
+        const res = await fetch(`http://localhost:8080/api/groups/${group.id}/posts`, {
+          credentials: 'include'
+        })
         if (!res.ok) throw new Error('Failed to fetch posts')
         const data = await res.json()
         setPosts(data || [])
@@ -36,7 +38,7 @@ export default function PostsTab({ group, showPostForm, setShowPostForm }) {
   const fetchComments = async (postId) => {
     try {
       setLoadingComments(prev => ({ ...prev, [postId]: true }))
-      const res = await fetch(`/api/groups/${group.id}/posts/${postId}/comments`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${group.id}/posts/${postId}/comments`, {
         credentials: 'include'
       })
 
@@ -61,7 +63,7 @@ export default function PostsTab({ group, showPostForm, setShowPostForm }) {
     try {
       setPostingComment(prev => ({ ...prev, [postId]: true }))
 
-      const res = await fetch(`/api/groups/${group.id}/posts/${postId}/comments`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${group.id}/posts/${postId}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

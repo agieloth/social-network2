@@ -63,7 +63,7 @@ export function useNotifications(user, sendMessage) {
 
   const handleAccept = useCallback(async (notifId, senderId) => {
     try {
-      await fetch('/api/follow/accept', {
+      await fetch('http://localhost:8080/api/follow/accept', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sender_id: senderId }),
@@ -72,14 +72,14 @@ export function useNotifications(user, sendMessage) {
 
       sendMessage({ type: 'FETCH_CHAT_USERS' })
 
-      await fetch('/api/notifications/seen', {
+      await fetch('http://localhost:8080/api/notifications/seen', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notification_id: notifId }),
         credentials: 'include',
       })
 
-      await fetch('/api/notifications/delete', {
+      await fetch('http://localhost:8080/api/notifications/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notification_id: notifId }),
@@ -94,19 +94,19 @@ export function useNotifications(user, sendMessage) {
   const handleReject = useCallback(async (notifId, senderId) => {
     try {
       const [rejectRes, seenRes, deleteRes] = await Promise.all([
-        fetch('/api/follow/reject', {
+        fetch('http://localhost:8080/api/follow/reject', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sender_id: senderId }),
           credentials: 'include',
         }),
-        fetch('/api/notifications/seen', {
+        fetch('http://localhost:8080/api/notifications/seen', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notification_id: notifId }),
           credentials: 'include',
         }),
-        fetch('/api/notifications/delete', {
+        fetch('http://localhost:8080/api/notifications/delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notification_id: notifId }),

@@ -11,7 +11,7 @@ export default function PendingRequests({ groupId }) {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const res = await fetch(`/api/groups/${groupId}/membership/pending_requests`, {
+        const res = await fetch(`http://localhost:8080/api/groups/${groupId}/membership/pending_requests`, {
           credentials: 'include'
         })
         
@@ -35,7 +35,7 @@ export default function PendingRequests({ groupId }) {
 
   const handleApprove = async (requestId, userId) => {
     try {
-      const res = await fetch(`/api/groups/${groupId}/membership/approve`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/membership/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId }),
@@ -52,7 +52,7 @@ export default function PendingRequests({ groupId }) {
 
   const handleDecline = async (requestId, userId) => {
     try {
-      const res = await fetch(`/api/groups/${groupId}/membership/decline`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/membership/decline`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId }),

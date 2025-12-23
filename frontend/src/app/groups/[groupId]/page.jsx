@@ -43,13 +43,13 @@ export default function GroupDetailPage({ params }) {
   const handleJoin = async (e) => {
     e.stopPropagation()
     try {
-      const res = await fetch(`/api/groups/${groupId}/membership/join`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/membership/join`, {
         method: 'POST',
         credentials: 'include'
       })
       if (!res.ok) throw new Error('Failed to join group')
 
-      const refreshRes = await fetch(`/api/groups/${groupId}`)
+      const refreshRes = await fetch(`http://localhost:8080/api/groups/${groupId}`)
       if (refreshRes.ok) {
         setGroup(await refreshRes.json())
       }
@@ -61,7 +61,9 @@ export default function GroupDetailPage({ params }) {
   useEffect(() => {
     const fetchGroup = async () => {
       try {
-        const res = await fetch(`/api/groups/${groupId}`)
+        const res = await fetch(`http://localhost:8080/api/groups/${groupId}`, {
+          credentials: 'include' // 👈 AJOUTE CECI
+        })
         if (!res.ok) throw new Error('Failed to fetch group')
         const data = await res.json()
         setGroup(data)
@@ -81,7 +83,7 @@ export default function GroupDetailPage({ params }) {
       const loadMembers = async () => {
         setLoadingMembers(true);
         try {
-          const res = await fetch(`/api/groups/${group.id}/members`, {
+          const res = await fetch(`http://localhost:8080/api/groups/${group.id}/members`, {
             credentials: 'include'
           });
 
@@ -106,7 +108,7 @@ export default function GroupDetailPage({ params }) {
 
     setLoadingMembers(true);
     try {
-      const res = await fetch(`/api/groups/${group.id}/members`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${group.id}/members`, {
         credentials: 'include'
       });
 

@@ -91,7 +91,7 @@ export function Navbar() {
         formData.append("recipient_ids", id);
       });
 
-      const res = await fetch("/api/posts", {
+      const res = await fetch("http://localhost:8080/api/posts", {
         method: "POST",
         body: formData,
         credentials: "include",
@@ -110,7 +110,7 @@ export function Navbar() {
       }
 
       // Rafraîchir les posts en appelant l'API pour récupérer le nouveau post
-      await fetch("/api/posts", {
+      await fetch("http://localhost:8080/api/posts", {
         credentials: "include"
       })
         .then(res => res.json())
@@ -140,7 +140,7 @@ export function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/logout', {
+      await fetch('http://localhost:8080/api/logout', {
         credentials: 'include',
         method: 'POST'
       })
@@ -199,21 +199,21 @@ export function Navbar() {
 
   const handleAccept = async (notifId, senderId) => {
     try {
-      await fetch('/api/follow/accept', {
+      await fetch('http://localhost:8080/api/follow/accept', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sender_id: senderId }),
         credentials: 'include',
       });
 
-      await fetch('/api/notifications/seen', {
+      await fetch('http://localhost:8080/api/notifications/seen', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notification_id: notifId }),
         credentials: 'include',
       });
 
-      await fetch('/api/notifications/delete', {
+      await fetch('http://localhost:8080/api/notifications/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notification_id: notifId }),
@@ -228,19 +228,19 @@ export function Navbar() {
   const handleReject = async (notifId, senderId) => {
     try {
       const [rejectRes, seenRes, deleteRes] = await Promise.all([
-        fetch('/api/follow/reject', {
+        fetch('http://localhost:8080/api/follow/reject', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sender_id: senderId }),
           credentials: 'include',
         }),
-        fetch('/api/notifications/seen', {
+        fetch('http://localhost:8080/api/notifications/seen', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notification_id: notifId }),
           credentials: 'include',
         }),
-        fetch('/api/notifications/delete', {
+        fetch('http://localhost:8080/api/notifications/delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notification_id: notifId }),
@@ -260,7 +260,7 @@ export function Navbar() {
 
   const handleApprove = async (notifId, userId, groupId) => {
     try {
-      const res = await fetch(`/api/groups/${groupId}/membership/approve`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/membership/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId }),
@@ -268,14 +268,14 @@ export function Navbar() {
       })
 
       if (res.ok) {
-        await fetch('/api/notifications/seen', {
+        await fetch('http://localhost:8080/api/notifications/seen', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notification_id: notifId }),
           credentials: 'include',
         });
 
-        await fetch('/api/notifications/delete', {
+        await fetch('http://localhost:8080/api/notifications/delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notification_id: notifId }),
@@ -290,21 +290,21 @@ export function Navbar() {
 
   const handleDecline = async (notifId, userId, groupId) => {
     try {
-      const res = await fetch(`/api/groups/${groupId}/membership/decline`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/membership/decline`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId }),
         credentials: 'include'
       })
       if (res.ok) {
-        await fetch('/api/notifications/seen', {
+        await fetch('http://localhost:8080/api/notifications/seen', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notification_id: notifId }),
           credentials: 'include',
         });
 
-        await fetch('/api/notifications/delete', {
+        await fetch('http://localhost:8080/api/notifications/delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notification_id: notifId }),
@@ -320,7 +320,7 @@ export function Navbar() {
   const handleVote = async (eventId, groupId, response, notifId) => {
 
     try {
-      const res = await fetch(`/api/groups/${groupId}/events/${eventId}/vote`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/events/${eventId}/vote`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -330,14 +330,14 @@ export function Navbar() {
       });
 
       if (!res.ok) throw new Error('Failed to submit response');
-      await fetch('/api/notifications/seen', {
+      await fetch('http://localhost:8080/api/notifications/seen', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notification_id: notifId }),
         credentials: 'include',
       });
 
-      await fetch('/api/notifications/delete', {
+      await fetch('http://localhost:8080/api/notifications/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notification_id: notifId }),
@@ -352,21 +352,21 @@ export function Navbar() {
   const handleInviteAccept = async (groupId, notifId) => {
     try {
       // First accept the invitation (this will update the membership status to 'accepted')
-      const res = await fetch(`/api/groups/${groupId}/membership/accept`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/membership/accept`, {
         method: 'POST',
         credentials: 'include',
       });
 
       if (res.ok) {
         // Mark notification as seen and delete it
-        await fetch('/api/notifications/seen', {
+        await fetch('http://localhost:8080/api/notifications/seen', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notification_id: notifId }),
           credentials: 'include',
         });
 
-        await fetch('/api/notifications/delete', {
+        await fetch('http://localhost:8080/api/notifications/delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notification_id: notifId }),
@@ -386,21 +386,21 @@ export function Navbar() {
   const handleInviteDecline = async (groupId, notifId) => {
     try {
       // First decline the invitation (this will remove the membership record)
-      const res = await fetch(`/api/groups/${groupId}/membership/refuse`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/membership/refuse`, {
         method: 'POST',
         credentials: 'include'
       });
 
       if (res.ok) {
         // Mark notification as seen and delete it
-        await fetch('/api/notifications/seen', {
+        await fetch('http://localhost:8080/api/notifications/seen', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notification_id: notifId }),
           credentials: 'include',
         });
 
-        await fetch('/api/notifications/delete', {
+        await fetch('http://localhost:8080/api/notifications/delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ notification_id: notifId }),

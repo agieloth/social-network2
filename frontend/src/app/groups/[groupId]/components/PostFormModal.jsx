@@ -18,7 +18,7 @@ export default function PostFormModal({ showPostForm, setShowPostForm, groupId }
     if (image) formData.append('image', image)
 
     try {
-      const res = await fetch(`/api/groups/${groupId}/posts`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/posts`, {
         method: 'POST',
         body: formData,
         credentials: 'include'

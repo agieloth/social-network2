@@ -32,7 +32,7 @@ export function WorkerInitializer() {
         if (type === 'notification' || type === 'follow_request' || type === 'group_join_request' || type === 'group_invitation' || type === 'group_event_created') {
           try {
             // fetch latest notifications from server to keep accurate state
-            const res = await fetch('/api/notifications', { credentials: 'include' })
+            const res = await fetch('http://localhost:8080/api/notifications', { credentials: 'include' })
             if (!res.ok) {
               console.warn('WorkerInitializer: failed to fetch notifications', res.status)
               return

@@ -15,7 +15,7 @@ export default function GroupCard({ group }) {
     setLocalStatus(prev => ({ ...prev, isPending: true }))
     
     try {
-      const res = await fetch(`/api/groups/${group.id}/membership/join`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${group.id}/membership/join`, {
         method: 'POST',
         credentials: 'include'
       })

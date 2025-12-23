@@ -69,7 +69,7 @@ export default function EventFormModal({ showEventForm, setShowEventForm, groupI
         event_date: new Date(eventForm.eventDate).toISOString()
       }
 
-      const res = await fetch(`/api/groups/${groupId}/events`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

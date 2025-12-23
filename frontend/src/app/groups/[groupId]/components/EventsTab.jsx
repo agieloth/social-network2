@@ -11,7 +11,7 @@ export default function EventsTab({ group, showEventForm, setShowEventForm }) {
     
     setLoading(true);
     try {
-      const res = await fetch(`/api/groups/${group.id}/events`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${group.id}/events`, {
         credentials: 'include'
       });
       
@@ -35,7 +35,7 @@ export default function EventsTab({ group, showEventForm, setShowEventForm }) {
 
   const handleVote = async (eventId, response) => {
     try {
-      const res = await fetch(`/api/groups/${group.id}/events/${eventId}/vote`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${group.id}/events/${eventId}/vote`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
