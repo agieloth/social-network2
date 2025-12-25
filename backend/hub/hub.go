@@ -78,14 +78,7 @@ func (h *Hub) Run() {
 
 				// Send to recipient if connected
 				if recipient, ok := h.Clients[msg.To]; ok {
-					select {
-					case recipient.Send <- msgBytes:
-						fmt.Printf("✅ Private message sent to recipient user %d\n", msg.To)
-					default:
-						fmt.Printf("⚠️ Failed to send to recipient %d (channel full)\n", msg.To)
-						close(recipient.Send)
-						delete(h.Clients, recipient.ID)
-					}
+					h.safeSend(recipient, msgBytes)
 				} else {
 					fmt.Printf("⚠️ Recipient user %d not connected\n", msg.To)
 				}
@@ -93,14 +86,7 @@ func (h *Hub) Run() {
 				// IMPORTANT: Also send confirmation back to sender for real-time display
 				// This ensures the sender sees the message immediately
 				if sender, ok := h.Clients[msg.From]; ok {
-					select {
-					case sender.Send <- msgBytes:
-						fmt.Printf("✅ Private message confirmation sent to sender user %d\n", msg.From)
-					default:
-						fmt.Printf("⚠️ Failed to send confirmation to sender %d\n", msg.From)
-						close(sender.Send)
-						delete(h.Clients, sender.ID)
-					}
+					h.safeSend(sender, msgBytes)
 				} else {
 					fmt.Printf("⚠️ Sender user %d not connected (no confirmation sent)\n", msg.From)
 				}
@@ -130,16 +116,7 @@ func (h *Hub) Run() {
 							fmt.Println("❌ Failed to marshal message for member:", err)
 							continue
 						}
-						select {
-						case client.Send <- msgBytesToSend:
-							fmt.Println("✅ Message sent to user", memberID)
-							// Message sent successfully
-						default:
-							// Handle full channel or disconnected client
-							fmt.Printf("⚠️ Failed to send to user %d (channel full)\n", memberID)
-							close(client.Send)
-							delete(h.Clients, memberID)
-						}
+						h.safeSend(client, msgBytesToSend)
 					} else {
 						fmt.Printf("⚠️ User %d not connected\n", memberID)
 					}
@@ -188,7 +165,7 @@ func (h *Hub) SendNotification(notification models.Notification, toID int) {
 	msgBytes, _ := json.Marshal(notification)
 	fmt.Println("message that will be sent :", string(msgBytes))
 	if recipient, ok := h.Clients[toID]; ok {
-		recipient.Send <- msgBytes
+		h.safeSend(recipient, msgBytes)
 	}
 }
 
@@ -200,20 +177,41 @@ func (h *Hub) SendMessageToUser(userID int, message models.Message) {
 	}
 
 	if client, ok := h.Clients[userID]; ok {
-		select {
-		case client.Send <- msgBytes:
-			fmt.Printf("✅ Message sent to user %d\n", userID)
-		default:
-			// Canal plein, client déconnecté ou occupé
-			fmt.Printf("⚠️ Failed to send message to user %d (channel full or client disconnected)\n", userID)
-		}
+		h.safeSend(client, msgBytes)
 	} else {
 		fmt.Printf("⚠️ User %d not connected\n", userID)
 	}
 }
 
+// safeSend envoie des bytes sur le channel du client de façon sûre,
+// récupère d'un panic si le channel a été fermé simultanément et nettoie l'état.
+func (h *Hub) safeSend(client *Client, data []byte) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("❌ Recovered panic sending to client %d: %v\n", client.ID, r)
+			// Ensure channel closed and remove client
+			select {
+			default:
+				// best-effort close
+				close(client.Send)
+			}
+			delete(h.Clients, client.ID)
+		}
+	}()
+
+	select {
+	case client.Send <- data:
+		fmt.Printf("✅ Message sent to user %d\n", client.ID)
+	default:
+		fmt.Printf("⚠️ Failed to send to user %d (channel full)\n", client.ID)
+		// best-effort cleanup
+		close(client.Send)
+		delete(h.Clients, client.ID)
+	}
+}
+
 func (h *Hub) WarmGroupMembersCache(groupID int) error {
-	members, err := h.services.GetGroupMembers(groupID)
+	members, err := h.messageService.GetGroupMembers(groupID)
 	if err != nil {
 		return err
 	}
