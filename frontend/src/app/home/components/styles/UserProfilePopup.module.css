@@ -26,6 +26,9 @@
   transform: translate(-50%, -50%);
   z-index: 1000;
   animation: fadeIn 0.3s ease-out;
+  background: linear-gradient(145deg, #1f2937, #111827); /* Dégradé subtil */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
 }
 
 @keyframes fadeIn {
@@ -69,6 +72,8 @@
   border: 1px solid rgb(75, 85, 99);
   object-fit: cover;
   margin-bottom: 0.75rem;
+  border: 3px solid #1f2937; /* Crée une séparation avec le fond */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
 .name {
@@ -188,4 +193,12 @@
 
 .viewProfileBtn:hover {
   text-decoration: underline;
+}
+
+.followBtn, .viewProfileBtn {
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.followBtn:active {
+  transform: scale(0.95);
 }

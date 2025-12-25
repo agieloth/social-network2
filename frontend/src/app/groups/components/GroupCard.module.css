@@ -5,10 +5,18 @@
   border: 1px solid #374151; /* border-gray-700 */
   transition: border-color 0.3s ease;
   cursor: default;
+  transition: transform 0.2s ease, border-color 0.3s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {
-  border-color: #4b5563; /* border-gray-600 */
+  border-color: #4b5563;
+  transform: translateY(-2px); /* La carte se soulève légèrement */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+/* Pour tous tes boutons (.submitBtn, .cancelBtn, .joinBtn, etc.) */
+.submitBtn:active, .cancelBtn:active, .joinBtn:active {
+  transform: scale(0.97); /* Le bouton s'enfonce au clic */
 }
 
 .header {

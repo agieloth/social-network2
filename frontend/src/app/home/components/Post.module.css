@@ -8,6 +8,15 @@
   max-width: 42rem;
   margin-left: auto;
   margin-right: auto;
+  background-color: #1a202c; /* ou rgba(26, 32, 44, 0.6) si tu veux voir le fond global */
+  border: 1px solid rgba(255, 255, 255, 0.05); /* Bordure presque invisible par défaut */
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.post:hover {
+  border-color: rgba(66, 153, 225, 0.3); /* Bordure bleu pâle au survol */
+  transform: translateY(-2px); /* Légère élévation */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
 }
 
 .authorContainer {
@@ -51,6 +60,12 @@
   border-radius: 0.25rem;
   border: 1px solid #4a5568;
   margin-bottom: 0.5rem;
+  transition: opacity 0.3s;
+}
+
+
+.postImage:hover {
+  opacity: 0.95;
 }
 
 .actionsContainer {

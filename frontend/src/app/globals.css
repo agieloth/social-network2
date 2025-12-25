@@ -24,3 +24,32 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Design fin et sombre pour les scrollbars */
+.chatMessages::-webkit-scrollbar,
+.postList::-webkit-scrollbar,
+.tabContent::-webkit-scrollbar,
+.inviteSection::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chatMessages::-webkit-scrollbar-track,
+.postList::-webkit-scrollbar-track,
+.tabContent::-webkit-scrollbar-track,
+.inviteSection::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chatMessages::-webkit-scrollbar-thumb,
+.postList::-webkit-scrollbar-thumb,
+.tabContent::-webkit-scrollbar-thumb,
+.inviteSection::-webkit-scrollbar-thumb {
+  background-color: #4b5563; /* Gris moyen */
+  border-radius: 20px;
+  border: 2px solid #1f2937; /* Crée une marge invisible autour de la barre */
+}
+
+.chatMessages::-webkit-scrollbar-thumb:hover,
+.postList::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280; /* Plus clair au survol */
+}

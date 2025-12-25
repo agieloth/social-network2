@@ -158,11 +158,20 @@
   color: white;
   max-width: 70%;
   word-wrap: break-word;
+  padding: 10px 16px;
+  border-radius: 18px; /* Plus rond */
+  border-bottom-left-radius: 4px; /* "Queue" de la bulle */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  line-height: 1.5;
 }
 
 .messageBubble.sent {
   text-align: right;
   background: #007bff;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8); /* Léger dégradé pour la profondeur */
+  border-radius: 18px;
+  border-bottom-right-radius: 4px; /* "Queue" du côté droit */
+  border-bottom-left-radius: 18px;
 }
 
 .messageSender {

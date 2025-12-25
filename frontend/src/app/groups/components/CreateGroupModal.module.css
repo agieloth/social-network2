@@ -6,6 +6,9 @@
   align-items: center;
   justify-content: center;
   z-index: 50;
+  background-color: rgba(0, 0, 0, 0.6); /* Un peu plus sombre */
+  backdrop-filter: blur(5px); /* AJOUT: Floute l'arrière-plan pour le focus */
+  transition: all 0.3s ease;
 }
 
 .modal {
@@ -16,6 +19,8 @@
   max-width: 28rem; /* max-w-md */
   border: 1px solid #374151; /* border-gray-700 */
   box-sizing: border-box;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3); /* Ombre portée plus profonde */
+  animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* Effet de rebond subtil */
 }
 
 .header {
@@ -81,7 +86,7 @@
 
 .input:focus, .textarea:focus {
   border-color: #3b82f6; /* blue-500 */
-  box-shadow: 0 0 0 1px #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); 
 }
 
 .textarea {
@@ -130,4 +135,16 @@
 .submitBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* AJOUT de l'animation */
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }

@@ -92,12 +92,14 @@
   background-color: rgba(55, 65, 81, 0.6);
   border-radius: 0.75rem;
   border: 1px solid rgba(75, 85, 99, 0.3);
-  transition: transform 0.2s, border-color 0.2s;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .postItem:hover {
-  transform: translateY(-2px);
-  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-3px); /* Monte un peu plus haut */
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3); /* Ombre plus diffuse */
+  border-color: rgba(59, 130, 246, 0.5); /* Bordure bleue subtile */
+  background-color: rgba(31, 41, 55, 0.9); /* S'éclaircit légèrement */
 }
 
 .postHeader {
@@ -261,10 +263,14 @@
   font-size: 0.9rem;
   cursor: pointer;
   transition: color 0.2s;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
 }
 
 .statItem:hover {
-  color: white;
+  background-color: rgba(255, 255, 255, 0.05); /* Petit fond au survol */
+  color: #60a5fa; /* Devient bleu */
 }
 
 .statIcon {

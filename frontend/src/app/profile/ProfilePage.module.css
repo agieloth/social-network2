@@ -27,8 +27,18 @@
   border-radius: 0.375rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  background-color: transparent;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .logoutBtn:hover {
-  background-color: #b91c1c; /* red-700 */
+  background-color: #ef4444;
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); /* Glow rouge au survol */
 }

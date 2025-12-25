@@ -6,6 +6,8 @@
   align-items: center;
   justify-content: center;
   z-index: 50;
+  backdrop-filter: blur(5px); /* Ajout du flou comme l'autre modale */
+  animation: fadeIn 0.2s ease-out;
 }
 
 .modalContent {
@@ -14,6 +16,9 @@
   padding: 1.5rem; /* p-6 */
   width: 100%;
   max-width: 42rem; /* max-w-2xl */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease-out; /* On copie l'animation de EventForm */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Bordure subtile pour le contraste */
 }
 
 .title {
@@ -111,4 +116,15 @@
 
 .emptyStateCloseButton {
   margin-top: 1rem; /* mt-4 */
+}
+
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }

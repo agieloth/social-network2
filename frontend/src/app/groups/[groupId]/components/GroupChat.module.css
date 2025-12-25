@@ -25,6 +25,11 @@
   align-items: center;
   padding: 1rem; /* p-4 */
   border-bottom: 1px solid #374151; /* border-gray-700 */
+  background-color: rgba(31, 41, 55, 0.85); /* Légèrement transparent */
+  backdrop-filter: blur(12px); /* L'effet de flou magique */
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .headerTitleContainer {
@@ -102,16 +107,21 @@
   max-width: 83.333333%; /* max-w-xs */
   padding: 0.75rem; /* p-3 */
   border-radius: 0.5rem; /* rounded-lg */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  transition: transform 0.1s;
 }
 
 .messageBubble.currentUser {
   background-color: #2563eb; /* bg-blue-600 */
   color: white;
+  border-radius: 1rem 1rem 0 1rem; /* Arrondi sauf en bas à droite */
+  background: linear-gradient(135deg, #2563eb, #3b82f6); /* Dégradé subtil */
 }
 
 .messageBubble.otherUser {
   background-color: #374151; /* bg-gray-700 */
   color: white;
+  border-radius: 1rem 1rem 1rem 0;
 }
 
 .messageContent {
@@ -176,4 +186,8 @@
 
 .sendButton:disabled {
   opacity: 0.5;
+}
+
+.sendButton:active:not(:disabled) {
+  transform: scale(0.95);
 }

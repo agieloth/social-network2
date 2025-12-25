@@ -11,6 +11,8 @@
   border: none;
   cursor: pointer;
   transition: color 0.2s;
+  position: relative;
+  overflow: hidden;
 }
 
 .tabButton:hover {
@@ -18,6 +20,15 @@
 }
 
 .tabButton.active {
-  color: #60a5fa; /* text-blue-400 */
-  border-bottom: 2px solid #3b82f6; /* border-b-2 border-blue-500 */
+  color: #fff;
+  border-bottom: 2px solid #3b82f6;
+  /* Ajout d'un fond dégradé subtil vers le haut */
+  background: linear-gradient(to top, rgba(59, 130, 246, 0.15), transparent);
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); /* Texte lumineux */
+}
+
+/* Petit effet au survol pour les inactifs */
+.tabButton:not(.active):hover {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 0.5rem 0.5rem 0 0;
 }
