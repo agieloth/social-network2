@@ -31,3 +31,9 @@ func (s *SessionService) GetUserNicknameById(userId int) string {
 func (s *SessionService) CreateSession(userID int) (string, time.Time, error) {
 	return s.sessionRepo.CreateSession(userID)
 }
+
+// DeleteSession supprime une session par son ID
+func (s *SessionService) DeleteSession(sessionID string) error {
+	_, err := sqlite.DB.Exec(`DELETE FROM sessions WHERE id = ?`, sessionID)
+	return err
+}

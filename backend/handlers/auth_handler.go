@@ -3,10 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
-	"social/db/sqlite"
 	"social/hub"
 	"social/models"
 	"social/services"
@@ -23,16 +20,14 @@ func NewHandler(service *services.AuthService, sessionService *services.SessionS
 	return &Handler{authService: service, sessionService: sessionService, Hub: hub}
 }
 
-// handler/auth_handler.go
 func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	err := r.ParseMultipartForm(10 << 20) // 10 MB
-	if err != nil {
-		http.Error(w, "Error parsing form", http.StatusBadRequest)
+	if err := utils.ParseMultipartFormSafe(r, 10<<20); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, "Invalid form")
 		return
 	}
 
@@ -46,38 +41,26 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		About:       r.FormValue("about"),
 	}
 
-	// Handle avatar upload
-	file, header, err := r.FormFile("avatar")
-	if err == nil {
-		defer file.Close()
-
-		avatarPath := "uploads/avatars/" + header.Filename
-		out, err := os.Create(avatarPath)
-		if err != nil {
-			http.Error(w, "Unable to save avatar", http.StatusInternalServerError)
-			return
-		}
-		defer out.Close()
-
-		_, err = io.Copy(out, file)
-		if err != nil {
-			http.Error(w, "Failed to write avatar", http.StatusInternalServerError)
-			return
-		}
-		form.Avatar = avatarPath
-	} else {
-		form.Avatar = ""
+	// Upload avatar optionnel
+	avatarPath, err := utils.HandleOptionalFileUpload(
+		r,
+		"avatar",
+		utils.DefaultImageUploadConfig("uploads/avatars"),
+	)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, "Failed to upload avatar: "+err.Error())
+		return
 	}
+	form.Avatar = avatarPath
 
-	// Delegate to service
+	// Déléguer au service
 	err = h.authService.Register(form)
 	if err != nil {
-		http.Error(w, "Could not register: "+err.Error(), http.StatusConflict)
+		utils.WriteError(w, http.StatusConflict, "Could not register: "+err.Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("✅ Registered successfully"))
+	utils.WriteSuccess(w, "Registered successfully")
 }
 
 func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -89,19 +72,19 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	var req models.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		utils.WriteError(w, http.StatusBadRequest, "Invalid JSON")
 		return
 	}
 
 	user, err := h.authService.Login(req.Email, req.Password)
 	if err != nil {
-		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		utils.WriteError(w, http.StatusUnauthorized, "Invalid credentials")
 		return
 	}
 
 	sessionID, expiration, err := h.sessionService.CreateSession(user.ID)
 	if err != nil {
-		http.Error(w, "Could not create session", http.StatusInternalServerError)
+		utils.WriteError(w, http.StatusInternalServerError, "Could not create session")
 		return
 	}
 
@@ -117,36 +100,38 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	user.Avatar = utils.PrepareAvatarURL(user.Avatar)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
+	utils.WriteJSON(w, http.StatusOK, user)
 }
 
 func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	db := sqlite.DB
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
-		http.Error(w, "No session cookie found", http.StatusUnauthorized)
+		utils.WriteError(w, http.StatusUnauthorized, "No session cookie found")
 		return
 	}
-	_, err = db.Exec(`DELETE FROM sessions WHERE id = ?`, cookie.Value)
+
+	// Utiliser le service au lieu d'accès direct à la DB
+	err = h.sessionService.DeleteSession(cookie.Value)
 	if err != nil {
-		http.Error(w, "Failed to log out", http.StatusInternalServerError)
+		utils.WriteError(w, http.StatusInternalServerError, "Failed to log out")
 		return
 	}
-	// Clear cookie by setting MaxAge to -1
+
+	// Clear cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_id",
 		Value:    "",
 		Path:     "/",
 		MaxAge:   -1,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode, // Pour s'assurer que les cookies sont bien envoyés au frontend
+		SameSite: http.SameSiteLaxMode,
 		Secure:   false,
 	})
 
-	w.Write([]byte("✅ Logged out successfully"))
+	utils.WriteSuccess(w, "Logged out successfully")
 }

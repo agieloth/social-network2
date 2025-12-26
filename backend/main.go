@@ -6,6 +6,7 @@ import (
 	"os"
 	"social/db/sqlite"
 	"social/handlers"
+	"social/handlers/group"
 	hubS "social/hub"
 	"social/repositories"
 	"social/services"
@@ -64,66 +65,69 @@ func main() {
 	authHandler := handlers.NewHandler(authService, sessionService, hub)
 	chatHandler := handlers.NewChatHandler(chatService, sessionService)
 	followHandler := handlers.NewFollowHandler(followService, sessionService, hub)
-	groupHandler := handlers.NewGroupHandler(groupService, sessionService, hub)
+	groupHandler := group.NewHandler(groupService, sessionService, hub)
 	hubHandler := hubS.NewHandler(authService, sessionService, groupService, hub)
 	notifHandler := handlers.NewNotificationHandler(notifService, sessionService)
 	postHandler := handlers.NewPostHandler(postService, sessionService)
 	profileHandler := handlers.NewProfileHandler(profileService, sessionService, hub)
 
-	// 6. Setup Router
+	// 6. Create Auth Middleware
+	authMiddleware := utils.AuthMiddleware(sessionService)
+
+	// 7. Setup Router
 	mux := http.NewServeMux()
 
-	// Authentication routes
+	// Authentication routes (NON protégées)
 	mux.HandleFunc("/api/login", authHandler.LoginHandler)
 	mux.HandleFunc("/api/register", authHandler.RegisterHandler)
 	mux.HandleFunc("/api/logout", authHandler.LogoutHandler)
 
-	// User profile routes
-	mux.HandleFunc("/api/profile/", profileHandler.ProfileHandler)
-	mux.HandleFunc("/api/users/", profileHandler.GetUserByIDHandler)
-	mux.HandleFunc("/api/search", profileHandler.SearchUsers)
-	mux.HandleFunc("/api/user/toggle-privacy", profileHandler.TogglePrivacy)
-	mux.HandleFunc("/api/auth/me", profileHandler.GetMe)
+	// User profile routes (PROTÉGÉES)
+	mux.Handle("/api/profile/", authMiddleware(http.HandlerFunc(profileHandler.ProfileHandler)))
+	mux.Handle("/api/users/", authMiddleware(http.HandlerFunc(profileHandler.GetUserByIDHandler)))
+	mux.Handle("/api/search", authMiddleware(http.HandlerFunc(profileHandler.SearchUsers)))
+	mux.Handle("/api/user/toggle-privacy", authMiddleware(http.HandlerFunc(profileHandler.TogglePrivacy)))
+	mux.Handle("/api/auth/me", authMiddleware(http.HandlerFunc(profileHandler.GetMe)))
 
-	// Post routes
-	mux.Handle("/api/posts", utils.CorsMiddleware(http.HandlerFunc(postHandler.PostsHandler)))
-	mux.HandleFunc("/api/user-posts/", postHandler.GetUserPostsHandler)
-	mux.HandleFunc("/api/comments", postHandler.CreateCommentHandler)
-	mux.HandleFunc("/api/comments/post", postHandler.GetCommentsByPostHandler)
+	// Post routes (PROTÉGÉES)
+	mux.Handle("/api/posts", authMiddleware(http.HandlerFunc(postHandler.PostsHandler)))
+	mux.Handle("/api/user-posts/", authMiddleware(http.HandlerFunc(postHandler.GetUserPostsHandler)))
+	mux.Handle("/api/comments", authMiddleware(http.HandlerFunc(postHandler.CreateCommentHandler)))
+	mux.Handle("/api/comments/post", authMiddleware(http.HandlerFunc(postHandler.GetCommentsByPostHandler)))
 
-	// Follow routes
-	mux.HandleFunc("/api/follow", followHandler.SendFollowRequest)
-	mux.HandleFunc("/api/follow/status/", followHandler.GetFollowStatus)
-	mux.HandleFunc("/api/follow/accept", followHandler.AcceptFollow)
-	mux.HandleFunc("/api/follow/reject", followHandler.RejectFollow)
-	mux.HandleFunc("/api/unfollow", followHandler.UnfollowUser)
-	mux.HandleFunc("/api/users-followers/", followHandler.GetFollowersHandler)
-	mux.HandleFunc("/api/users-following/", followHandler.GetFollowingHandler)
-	mux.HandleFunc("/api/recipients", followHandler.GetRecipientsHandler)
+	// Follow routes (PROTÉGÉES)
+	mux.Handle("/api/follow", authMiddleware(http.HandlerFunc(followHandler.SendFollowRequest)))
+	mux.Handle("/api/follow/status/", authMiddleware(http.HandlerFunc(followHandler.GetFollowStatus)))
+	mux.Handle("/api/follow/accept", authMiddleware(http.HandlerFunc(followHandler.AcceptFollow)))
+	mux.Handle("/api/follow/reject", authMiddleware(http.HandlerFunc(followHandler.RejectFollow)))
+	mux.Handle("/api/unfollow", authMiddleware(http.HandlerFunc(followHandler.UnfollowUser)))
+	mux.Handle("/api/users-followers/", authMiddleware(http.HandlerFunc(followHandler.GetFollowersHandler)))
+	mux.Handle("/api/users-following/", authMiddleware(http.HandlerFunc(followHandler.GetFollowingHandler)))
+	mux.Handle("/api/recipients", authMiddleware(http.HandlerFunc(followHandler.GetRecipientsHandler)))
 
-	// Chat routes
-	mux.HandleFunc("/api/chat-users", chatHandler.GetAllChatUsers)
-	mux.HandleFunc("/api/chat/history", chatHandler.GetChatHistory)
+	// Chat routes (PROTÉGÉES)
+	mux.Handle("/api/chat-users", authMiddleware(http.HandlerFunc(chatHandler.GetAllChatUsers)))
+	mux.Handle("/api/chat/history", authMiddleware(http.HandlerFunc(chatHandler.GetChatHistory)))
 
-	// Notification routes
-	mux.HandleFunc("/api/notifications", notifHandler.GetUserNotifications)
-	mux.HandleFunc("/api/notifications/seen", notifHandler.MarkNotificationSeen)
-	mux.HandleFunc("/api/notifications/delete", notifHandler.DeleteNotification)
+	// Notification routes (PROTÉGÉES)
+	mux.Handle("/api/notifications", authMiddleware(http.HandlerFunc(notifHandler.GetUserNotifications)))
+	mux.Handle("/api/notifications/seen", authMiddleware(http.HandlerFunc(notifHandler.MarkNotificationSeen)))
+	mux.Handle("/api/notifications/delete", authMiddleware(http.HandlerFunc(notifHandler.DeleteNotification)))
 
-	// Group routes
-	mux.HandleFunc("/api/groups", groupHandler.DynamicMethods)
-	mux.HandleFunc("/api/groups/", groupHandler.GroupRouterHandler)
+	// Group routes (PROTÉGÉES)
+	mux.Handle("/api/groups", authMiddleware(http.HandlerFunc(groupHandler.DynamicMethods)))
+	mux.Handle("/api/groups/", authMiddleware(http.HandlerFunc(groupHandler.GroupRouterHandler)))
 
-	// WebSocket route
+	// WebSocket route (NON protégée - auth gérée en interne)
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("🧲 WebSocket connection initiated")
 		hubHandler.ServeWS(hub, w, r)
 	})
 
-	// Static files route
+	// Static files route (NON protégée)
 	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 
-	// 7. Setup Middleware
+	// 8. Setup Middleware
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/ws" {
 			// Bypass CORS for WebSocket
@@ -134,7 +138,7 @@ func main() {
 		utils.CorsMiddleware(mux).ServeHTTP(w, r)
 	})
 
-	// 8. Start Server
+	// 9. Start Server
 	fmt.Println("✅ Server started on :8080")
 	if err := http.ListenAndServe(":8080", handler); err != nil {
 		fmt.Printf("❌ Server error: %v\n", err)

@@ -7,11 +7,12 @@ import (
 
 	"social/models"
 	"social/services"
+	"social/utils"
 )
 
 type NotificationHandler struct {
 	NotificationService *services.NotificationService
-	SessionService      *services.SessionService // auth.GetUserIDFromSession equivalent
+	SessionService      *services.SessionService
 }
 
 func NewNotificationHandler(notificationService *services.NotificationService, sessionService *services.SessionService) *NotificationHandler {
@@ -22,27 +23,23 @@ func NewNotificationHandler(notificationService *services.NotificationService, s
 }
 
 func (h *NotificationHandler) GetUserNotifications(w http.ResponseWriter, r *http.Request) {
-	userID, err := h.SessionService.GetUserIDFromSession(r)
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	userID, ok := utils.GetUserIDFromContext(r.Context())
+	if !ok {
+		utils.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	notifications, err := h.NotificationService.GetUserNotifications(userID)
 	if err != nil {
 		log.Println("Error fetching notifications:", err)
-		notifications = []models.Notification{} // fallback to empty array
+		notifications = []models.Notification{}
 	}
 
 	if notifications == nil {
 		notifications = []models.Notification{}
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	if err := json.NewEncoder(w).Encode(notifications); err != nil {
-		log.Println("Error encoding notifications:", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-	}
+	utils.WriteJSON(w, http.StatusOK, notifications)
 }
 
 func (h *NotificationHandler) MarkNotificationSeen(w http.ResponseWriter, r *http.Request) {
@@ -51,37 +48,35 @@ func (h *NotificationHandler) MarkNotificationSeen(w http.ResponseWriter, r *htt
 		return
 	}
 
-	userID, err := h.SessionService.GetUserIDFromSession(r)
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	userID, ok := utils.GetUserIDFromContext(r.Context())
+	if !ok {
+		utils.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	var req models.MarkNotificationSeenRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
+		utils.WriteError(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
 
 	if err := h.NotificationService.MarkNotificationsAsSeen(userID, req.NotificationID, req.MarkAll); err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		utils.WriteError(w, http.StatusInternalServerError, "Database error")
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]bool{"success": true})
+	utils.WriteJSON(w, http.StatusOK, map[string]bool{"success": true})
 }
 
-// handler/notification_handler.go
 func (h *NotificationHandler) DeleteNotification(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	userID, err := h.SessionService.GetUserIDFromSession(r)
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	userID, ok := utils.GetUserIDFromContext(r.Context())
+	if !ok {
+		utils.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
@@ -89,15 +84,14 @@ func (h *NotificationHandler) DeleteNotification(w http.ResponseWriter, r *http.
 		NotificationID int `json:"notification_id"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
+		utils.WriteError(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
 
 	if err := h.NotificationService.DeleteNotification(userID, req.NotificationID); err != nil {
-		http.Error(w, "DB error", http.StatusInternalServerError)
+		utils.WriteError(w, http.StatusInternalServerError, "DB error")
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]bool{"success": true})
+	utils.WriteJSON(w, http.StatusOK, map[string]bool{"success": true})
 }

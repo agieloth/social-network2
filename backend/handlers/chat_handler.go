@@ -1,19 +1,17 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"social/services"
+	"social/utils"
 )
 
 type ChatHandler struct {
 	Service *services.ChatService
-	Session *services.SessionService // For getting user ID from session
+	Session *services.SessionService
 }
 
-// NewChatHandler creates a new ChatHandler instance
 func NewChatHandler(chatService *services.ChatService, sessionService *services.SessionService) *ChatHandler {
 	return &ChatHandler{
 		Service: chatService,
@@ -22,20 +20,19 @@ func NewChatHandler(chatService *services.ChatService, sessionService *services.
 }
 
 func (h *ChatHandler) GetAllChatUsers(w http.ResponseWriter, r *http.Request) {
-	requesterID, err := h.Session.GetUserIDFromSession(r)
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	requesterID, ok := utils.GetUserIDFromContext(r.Context())
+	if !ok {
+		utils.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	users, err := h.Service.GetAllChatUsers(requesterID)
 	if err != nil {
-		http.Error(w, "Failed to fetch users", http.StatusInternalServerError)
+		utils.WriteError(w, http.StatusInternalServerError, "Failed to fetch users")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(users)
+	utils.WriteJSON(w, http.StatusOK, users)
 }
 
 func (h *ChatHandler) GetChatHistory(w http.ResponseWriter, r *http.Request) {
@@ -44,34 +41,27 @@ func (h *ChatHandler) GetChatHistory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := h.Session.GetUserIDFromSession(r)
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	userID, ok := utils.GetUserIDFromContext(r.Context())
+	if !ok {
+		utils.WriteError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
-	otherIDStr := r.URL.Query().Get("with")
-	if otherIDStr == "" {
-		http.Error(w, "Missing 'with' parameter", http.StatusBadRequest)
-		return
-	}
-
-	otherID, err := strconv.Atoi(otherIDStr)
+	otherID, err := utils.ExtractQueryInt(r, "with")
 	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		utils.WriteError(w, http.StatusBadRequest, "Missing or invalid 'with' parameter")
 		return
 	}
 
 	messages, err := h.Service.GetChatHistory(userID, otherID)
 	if err != nil {
 		if err.Error() == "chat not allowed: users must follow each other" {
-			http.Error(w, err.Error(), http.StatusForbidden)
+			utils.WriteError(w, http.StatusForbidden, err.Error())
 			return
 		}
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		utils.WriteError(w, http.StatusInternalServerError, "Database error")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(messages)
+	utils.WriteJSON(w, http.StatusOK, messages)
 }
