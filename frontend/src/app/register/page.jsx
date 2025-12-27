@@ -3,22 +3,21 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { authApi } from '../../lib/api'
+import toast from 'react-hot-toast'
 import styles from './RegisterPage.module.css'
 
 export default function RegisterPage() {
   const router = useRouter()
 
+  // Vérifier si l'utilisateur est déjà connecté
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/profile', {
-          credentials: 'include',
-        })
-        if (res.ok) {
-          router.push('/home')
-        }
+        await authApi.getProfile()
+        router.push('/home')
       } catch (err) {
-        console.error('Auth check failed:', err)
+        // Utilisateur non connecté, on reste sur register
       }
     }
     checkAuth()
@@ -35,7 +34,7 @@ export default function RegisterPage() {
     avatar: '',
   })
 
-  const [message, setMessage] = useState({ type: '', text: '' })
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -44,6 +43,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setIsLoading(true)
 
     const formData = new FormData()
     Object.entries(form).forEach(([key, value]) => {
@@ -51,31 +51,26 @@ export default function RegisterPage() {
     })
 
     try {
-      const res = await fetch('http://localhost:8080/api/register', {
-        method: 'POST',
-        body: formData,
+      await authApi.register(formData)
+      toast.success('Registration successful! Redirecting to login...')
+      
+      // Reset form
+      setForm({
+        email: '',
+        password: '',
+        first_name: '',
+        last_name: '',
+        date_of_birth: '',
+        nickname: '',
+        about: '',
+        avatar: '',
       })
-
-      if (res.ok) {
-        setMessage({ type: 'success', text: '✅ Registered successfully!' })
-        setForm({
-          email: '',
-          password: '',
-          first_name: '',
-          last_name: '',
-          date_of_birth: '',
-          nickname: '',
-          about: '',
-          avatar: '',
-        })
-        setTimeout(() => router.push('/login'), 1000)
-      } else {
-        const errText = await res.text()
-        setMessage({ type: 'error', text: `❌ ${errText}` })
-      }
+      
+      setTimeout(() => router.push('/login'), 1500)
     } catch (err) {
-      console.error(err)
-      setMessage({ type: 'error', text: '❌ Network error' })
+      toast.error(err.message || 'Registration failed')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -84,13 +79,55 @@ export default function RegisterPage() {
       <h1 className={styles.h1}>Create your account</h1>
 
       <form onSubmit={handleSubmit} className={styles.form}>
-        <Input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required />
-        <Input name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange} required />
-        <Input name="first_name" placeholder="First Name" value={form.first_name} onChange={handleChange} required />
-        <Input name="last_name" placeholder="Last Name" value={form.last_name} onChange={handleChange} required />
-        <Input name="date_of_birth" type="date" value={form.date_of_birth} onChange={handleChange} required />
-        <Input name="nickname" placeholder="Nickname (optional)" value={form.nickname} onChange={handleChange} />
-        <Textarea name="about" placeholder="About Me (optional)" value={form.about} onChange={handleChange} />
+        <Input 
+          name="email" 
+          type="email" 
+          placeholder="Email" 
+          value={form.email} 
+          onChange={handleChange} 
+          required 
+        />
+        <Input 
+          name="password" 
+          type="password" 
+          placeholder="Password" 
+          value={form.password} 
+          onChange={handleChange} 
+          required 
+        />
+        <Input 
+          name="first_name" 
+          placeholder="First Name" 
+          value={form.first_name} 
+          onChange={handleChange} 
+          required 
+        />
+        <Input 
+          name="last_name" 
+          placeholder="Last Name" 
+          value={form.last_name} 
+          onChange={handleChange} 
+          required 
+        />
+        <Input 
+          name="date_of_birth" 
+          type="date" 
+          value={form.date_of_birth} 
+          onChange={handleChange} 
+          required 
+        />
+        <Input 
+          name="nickname" 
+          placeholder="Nickname (optional)" 
+          value={form.nickname} 
+          onChange={handleChange} 
+        />
+        <Textarea 
+          name="about" 
+          placeholder="About Me (optional)" 
+          value={form.about} 
+          onChange={handleChange} 
+        />
         <input
           type="file"
           name="avatar"
@@ -101,28 +138,19 @@ export default function RegisterPage() {
 
         <button
           type="submit"
+          disabled={isLoading}
           className={styles.button}
         >
-          Register
+          {isLoading ? 'Registering...' : 'Register'}
         </button>
 
         <p className={styles.p}>
-          Vous avez déjà un compte ?{' '}
+          Already have an account?{' '}
           <Link href="/login" className={styles.link}>
-            Connectez-vous ici
+            Login here
           </Link>
         </p>
       </form>
-
-      {message.text && (
-        <p
-          className={`${styles.message} ${
-            message.type === 'success' ? styles.success : styles.error
-          }`}
-        >
-          {message.text}
-        </p>
-      )}
     </main>
   )
 }

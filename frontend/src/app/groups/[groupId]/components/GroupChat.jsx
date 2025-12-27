@@ -52,24 +52,24 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
   const handleMessage = useCallback((event) => {
     const { type, data, message } = event.data;
     const messageData = data || message;
-    
+
     if (type === 'group_message') {
       // Le backend envoie groupId (camelCase) via le WebSocket
       const messageGroupID = messageData?.groupId || messageData?.groupID;
-      
-      console.log("🔔 Worker received group_message:", { 
-        messageGroupID, 
+
+      console.log("🔔 Worker received group_message:", {
+        messageGroupID,
         expectedGroupID: groupId,
         match: messageGroupID === groupId,
-        messageData 
+        messageData
       });
-      
+
       // Vérifier que le message est pour ce groupe
       if (messageGroupID !== groupId) {
         console.log("⏭️ Message ignored - wrong group ID");
         return;
       }
-      
+
       // Normaliser les noms de champs (WebSocket vs API REST peuvent avoir des noms différents)
       const normalizedMessage = {
         from: messageData.from,
@@ -79,42 +79,68 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
         type: messageData.type,
         sender_nickname: messageData.sender_nickname || messageData.senderNickname
       };
-      
+
       // Ajouter TOUS les messages du groupe, même ceux du sender
       // (le sender reçoit une confirmation de livraison du serveur)
       const isCurrentUser = normalizedMessage.from === user?.ID;
-      
+
       // Obtenir le nom du sender depuis les membres du groupe
       const senderInfo = groupMembers[normalizedMessage.from];
-      const senderDisplayName = isCurrentUser 
-        ? 'You' 
+      const senderDisplayName = isCurrentUser
+        ? 'You'
         : (senderInfo?.username || normalizedMessage.sender_nickname || 'User');
-      
-      console.log("📨 Adding group message:", { 
-        from: normalizedMessage.from, 
+
+      console.log("📨 Adding group message:", {
+        from: normalizedMessage.from,
         currentUserID: user?.ID,
         isCurrentUser,
         senderDisplayName,
-        content: normalizedMessage.content.substring(0, 50) 
+        content: normalizedMessage.content.substring(0, 50)
       });
-      
+
       setGroupChatMessages(prev => {
-        // Vérifier si le message existe déjà (pour éviter les doublons)
-        const messageExists = prev.some(msg => 
-          msg.from === normalizedMessage.from && 
+        // Si c'est mon message, remplacer le message local par le confirmé du serveur
+        if (isCurrentUser) {
+          // Supprimer le message local (marqué local: true)
+          const withoutLocal = prev.filter(msg => !msg.local || msg.from !== normalizedMessage.from);
+
+          // Vérifier si le message serveur existe déjà
+          const messageExists = withoutLocal.some(msg =>
+            msg.from === normalizedMessage.from &&
+            msg.timestamp === normalizedMessage.timestamp &&
+            msg.content === normalizedMessage.content
+          );
+
+          if (messageExists) {
+            console.log("⚠️ Server message already exists, skipping");
+            return withoutLocal;
+          }
+
+          // Ajouter le message confirmé du serveur
+          return [...withoutLocal, {
+            ...normalizedMessage,
+            sender_name: 'You',
+            isCurrentUser: true,
+            isOnline: true
+          }];
+        }
+
+        // Pour les messages des autres users
+        const messageExists = prev.some(msg =>
+          msg.from === normalizedMessage.from &&
           msg.timestamp === normalizedMessage.timestamp &&
           msg.content === normalizedMessage.content
         );
-        
+
         if (messageExists) {
           console.log("⚠️ Duplicate message detected, skipping");
-          return prev; // Ne pas ajouter de doublon
+          return prev;
         }
-        
+
         return [...prev, {
           ...normalizedMessage,
           sender_name: senderDisplayName,
-          isCurrentUser: isCurrentUser,
+          isCurrentUser: false,
           isOnline: onlineUsers.includes(normalizedMessage.from)
         }];
       });
@@ -143,16 +169,16 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
       })
       if (!res.ok) throw new Error('Failed to fetch messages')
       const data = await res.json()
-      
+
       // Formater les messages avec les noms d'expéditeur
       // Assurer que data est un array, sinon utiliser un array vide
       const messages = Array.isArray(data) ? data : [];
       const formattedMessages = messages.map(msg => {
         const isCurrentUser = msg.sender_id === user?.ID;
-        const displayName = isCurrentUser 
-          ? 'You' 
+        const displayName = isCurrentUser
+          ? 'You'
           : (msg.sender_nickname || 'User');
-        
+
         return {
           from: msg.sender_id,
           groupId: msg.group_id,
@@ -165,7 +191,7 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
           isOnline: onlineUsers.includes(msg.sender_id)
         }
       })
-      
+
       console.log("📥 Fetched messages:", formattedMessages.length);
       setGroupChatMessages(formattedMessages)
     } catch (err) {
@@ -189,12 +215,28 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
 
     console.log("🚀 Sending message:", message);
 
+    // ✨ NOUVEAU : Ajouter le message localement immédiatement
+    const localMessage = {
+      from: user.ID,
+      groupId: groupId,
+      content: message.content,
+      timestamp: message.timestamp,
+      type: 'group_message',
+      sender_name: 'You',
+      isCurrentUser: true,
+      isOnline: true,
+      local: true // Marque pour identifier les messages locaux
+    };
+
+    // Ajouter immédiatement à l'interface
+    setGroupChatMessages(prev => [...prev, localMessage]);
+
     // Clear input immediately for better UX
     setGroupChatInput('')
     setShowEmojiPicker(false)
 
     // Send group message via Worker
-    // The server will broadcast it back to all members including the sender
+    // Le serveur va broadcaster à tous (y compris sender)
     if (worker) {
       worker.postMessage({ type: 'SEND', message })
     }
@@ -209,17 +251,17 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
 
   const handleEmojiSelect = (emoji) => {
     if (!inputRef.current) return
-    
+
     const cursorPos = inputRef.current.selectionStart || groupChatInput.length
     const newText = groupChatInput.substring(0, cursorPos) + emoji + groupChatInput.substring(cursorPos)
-    
+
     setGroupChatInput(newText)
-    
+
     setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus()
         inputRef.current.setSelectionRange(
-          cursorPos + emoji.length, 
+          cursorPos + emoji.length,
           cursorPos + emoji.length
         )
       }
@@ -246,11 +288,11 @@ export default function GroupChat({ showGroupChat, setShowGroupChat, group }) {
           </button>
         </div>
 
-        <ChatMessages 
-          messages={groupChatMessages} 
-          user={user} 
-          loading={loading} 
-          error={error} 
+        <ChatMessages
+          messages={groupChatMessages}
+          user={user}
+          loading={loading}
+          error={error}
         />
         <ChatInput
           ref={inputRef}
@@ -312,10 +354,10 @@ function ChatMessage({ message }) {
   // Function to render message content with clickable links
   const renderMessageContent = (content) => {
     if (!content) return null
-    
+
     const urlRegex = /(https?:\/\/[^\s]+)/g
-    return content.split(urlRegex).map((part, i) => 
-      part.match(urlRegex) 
+    return content.split(urlRegex).map((part, i) =>
+      part.match(urlRegex)
         ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" className={styles.link}>{part}</a>
         : part
     )
@@ -327,7 +369,7 @@ function ChatMessage({ message }) {
         <p className={styles.messageContent}>{renderMessageContent(message.content)}</p>
         <p className={styles.messageInfo}>
           {/* Afficher le nom du sender depuis sender_name (qui contient le username du groupe) */}
-          {message.sender_name || (message.isCurrentUser ? 'You' : (message.sender_nickname || 'User'))} 
+          {message.sender_name || (message.isCurrentUser ? 'You' : (message.sender_nickname || 'User'))}
           {message.isOnline && <span className={styles.onlineIndicator}></span>}
           • {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
@@ -336,15 +378,15 @@ function ChatMessage({ message }) {
   )
 }
 
-const ChatInput = React.forwardRef(({ 
-  value, 
-  onChange, 
-  onKeyPress, 
-  onSend, 
-  disabled, 
-  showEmojiPicker, 
-  setShowEmojiPicker, 
-  onEmojiSelect 
+const ChatInput = React.forwardRef(({
+  value,
+  onChange,
+  onKeyPress,
+  onSend,
+  disabled,
+  showEmojiPicker,
+  setShowEmojiPicker,
+  onEmojiSelect
 }, ref) => {
   return (
     <div className={styles.chatInputContainer}>
@@ -360,7 +402,7 @@ const ChatInput = React.forwardRef(({
           className={styles.chatInput}
           aria-label="Message input"
         />
-        
+
         {!disabled && (
           <button
             type="button"

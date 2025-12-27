@@ -1,43 +1,31 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { groupsApi } from '../../../lib/api'
+import toast from 'react-hot-toast'
 import styles from './CreateGroupModal.module.css'
 
-export default function CreateGroupModal({ onClose }) {
+export default function CreateGroupModal({ onClose, onGroupCreated }) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
   const router = useRouter()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
-    setError('')
 
     try {
-      const res = await fetch('http://localhost:8080/api/groups', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title,
-          description
-        }),
-        credentials: 'include'
-      })
-
-      if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.message || 'Failed to create group')
+      const newGroup = await groupsApi.create(title, description)
+      toast.success('Group created successfully!')
+      
+      if (onGroupCreated) {
+        onGroupCreated()
       }
-
-      const newGroup = await res.json()
+      
       router.push(`/groups/${newGroup.id}`)
-      onClose()
     } catch (err) {
-      setError(err.message)
+      toast.error(err.message || 'Failed to create group')
       console.error('Group creation error:', err)
     } finally {
       setIsLoading(false)
@@ -56,12 +44,6 @@ export default function CreateGroupModal({ onClose }) {
             ✕
           </button>
         </div>
-
-        {error && (
-          <div className={styles.errorBox}>
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>

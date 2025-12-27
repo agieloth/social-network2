@@ -160,7 +160,8 @@ export function Navbar() {
       const uniqueNotifs = [];
       const seenKeys = new Set();
 
-      for (const notif of data) {
+      const notifications = Array.isArray(data) ? data : [];
+      for (const notif of notifications) {
         const key = `${notif.sender_id}-${notif.message}-${notif.type}`;
         if (!seenKeys.has(key)) {
           seenKeys.add(key);
@@ -168,13 +169,14 @@ export function Navbar() {
         }
       }
 
-      setNotifications(uniqueNotifs);
+      setNotifications(uniqueNotifs || []);
       setUnreadCount(uniqueNotifs.filter(n => !n.seen).length);
     } catch (err) {
       if (!err.message.includes('UNAUTHORIZED') &&
         !err.message.includes('JSON') &&
         !err.message.includes('Unauthorized')) {
         console.error("Error fetching notifications", err);
+        setNotifications([]);
       }
     }
   };
@@ -714,7 +716,7 @@ export function Navbar() {
             handleSubmit={handleSubmit}
             creating={creating}
             ref={fileInputRef}
-                onClose={() => setShowPostForm(false)}
+            onClose={() => setShowPostForm(false)}
           />
         </div>
       )}

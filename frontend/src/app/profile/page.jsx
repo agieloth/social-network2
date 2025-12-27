@@ -3,39 +3,52 @@
 import { useEffect, useState } from 'react'
 import { redirect, useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
-import styles from './ProfilePage.module.css' // import CSS module
+import { authApi } from '../../lib/api'
+import toast from 'react-hot-toast'
+import styles from './ProfilePage.module.css'
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState(null)
-  const [error, setError] = useState('')
-  const router = useRouter();
-  const { user } = useAuth();
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+  const { user } = useAuth()
 
   if (!user) {
-    redirect("/login");
+    redirect("/login")
   }
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/profile', {
-      credentials: 'include',
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Not authenticated')
-        return res.json()
-      })
-      .then(data => setProfile(data))
-      .catch(() => {
-        setError('Please login to view your profile')
+    const fetchProfile = async () => {
+      try {
+        const data = await authApi.getProfile()
+        setProfile(data)
+      } catch (err) {
+        toast.error('Please login to view your profile')
         setTimeout(() => router.push('/login'), 2000)
-      })
-  }, [])
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  if (error) {
-    return <p className={styles.error}>{error}</p>
+    fetchProfile()
+  }, [router])
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout()
+      toast.success('Logged out successfully')
+      router.push('/login')
+    } catch (err) {
+      toast.error('Logout failed')
+    }
+  }
+
+  if (loading) {
+    return <p className={styles.loading}>Loading...</p>
   }
 
   if (!profile) {
-    return <p className={styles.loading}>Loading...</p>
+    return null
   }
 
   return (
@@ -50,21 +63,7 @@ export default function ProfilePage() {
 
       <button
         className={styles.logoutBtn}
-        onClick={async () => {
-          try {
-            const res = await fetch('http://localhost:8080/api/logout', {
-              method: 'POST',
-              credentials: 'include',
-            });
-            if (res.ok) {
-              router.push('/login');
-            } else {
-              alert('Logout failed');
-            }
-          } catch (error) {
-            console.error('Logout error:', error);
-          }
-        }}
+        onClick={handleLogout}
       >
         Logout
       </button>

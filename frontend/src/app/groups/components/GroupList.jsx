@@ -1,6 +1,8 @@
 // src/app/groups/components/GroupList.jsx
 'use client'
 import { useEffect, useState } from 'react'
+import { groupsApi } from '../../../lib/api'
+import toast from 'react-hot-toast'
 import GroupCard from './GroupCard'
 import styles from './GroupList.module.css'
 
@@ -11,13 +13,11 @@ export default function GroupList() {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/groups', {
-          credentials: 'include'
-        })
-        const data = await res.json()
-        setGroups(data)
+        const data = await groupsApi.getAll()
+        setGroups(data || [])
       } catch (err) {
         console.error('Error fetching groups:', err)
+        toast.error('Failed to load groups')
       } finally {
         setLoading(false)
       }
@@ -34,9 +34,17 @@ export default function GroupList() {
     </div>
   )
 
+  if (groups.length === 0) {
+    return (
+      <div className={styles.emptyState}>
+        <p>No groups yet. Create one to get started!</p>
+      </div>
+    )
+  }
+
   return (
     <div className={styles.grid}>
-      {groups !== null && groups.map(group => (
+      {groups.map(group => (
         <GroupCard key={group.id} group={group} />
       ))}
     </div>

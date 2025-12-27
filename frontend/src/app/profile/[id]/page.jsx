@@ -2,97 +2,109 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import { authApi, usersApi, postsApi, followApi } from '../../../lib/api'
+import toast from 'react-hot-toast'
 import styles from './PublicProfilePage.module.css'
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export default function PublicProfilePage() {
   const { id } = useParams()
   const [profile, setProfile] = useState(null)
-  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   const [posts, setPosts] = useState([])
-  const [tab, setTab] = useState('posts');
-  const [followers, setFollowers] = useState([]);
-  const [following, setFollowing] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [tab, setTab] = useState('posts')
+  const [followers, setFollowers] = useState([])
+  const [following, setFollowing] = useState([])
+  const [currentUser, setCurrentUser] = useState(null)
 
   useEffect(() => {
-    fetchCurrentUser();
-  }, []);
+    fetchCurrentUser()
+  }, [])
 
   const fetchCurrentUser = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/profile", {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Unauthorized");
-      const data = await res.json();
-      setCurrentUser(data);
+      const data = await authApi.getProfile()
+      setCurrentUser(data)
     } catch {
-      router.push('/login');
+      router.push('/login')
     }
-  };
+  }
 
   useEffect(() => {
     if (!id) return
-    fetch(`http://localhost:8080/api/users/${id}`, { credentials: 'include' })
-      .then(res => res.ok ? res.json() : Promise.reject(res))
-      .then(data => {
+
+    const fetchProfile = async () => {
+      try {
+        setLoading(true)
+        const data = await usersApi.getById(id)
         setProfile(data)
+
         if (!data.is_private || data.is_followed || data.is_owner) {
-          loadPosts();
-          loadFollowers();
-          loadFollowing();
+          await Promise.all([
+            loadPosts(),
+            loadFollowers(),
+            loadFollowing()
+          ])
         }
-      })
-      .catch(() => setError("Ce profil n'existe pas."))
+      } catch (err) {
+        toast.error("This profile doesn't exist")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProfile()
   }, [id])
 
   const loadPosts = async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/user-posts/${id}`, {
-        credentials: 'include',
-      })
-      const text = await res.text()
-      if (!res.ok) throw new Error(text)
-      setPosts(JSON.parse(text))
+      const data = await postsApi.getUserPosts(id)
+      setPosts(data || [])
     } catch (err) {
-      setError(err.message)
+      console.error('Failed to load posts:', err)
     }
   }
 
   const loadFollowers = async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/users-followers/${id}`, { credentials: 'include' });
-      const text = await res.text();
-      if (!res.ok) throw new Error(text);
-      setFollowers(JSON.parse(text));
-    } catch {}
-  };
+      const data = await followApi.getFollowers(id)
+      setFollowers(data || [])
+    } catch (err) {
+      console.error('Failed to load followers:', err)
+    }
+  }
 
   const loadFollowing = async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/users-following/${id}`, { credentials: 'include' });
-      const text = await res.text();
-      if (!res.ok) throw new Error(text);
-      setFollowing(JSON.parse(text));
-    } catch {}
-  };
+      const data = await followApi.getFollowing(id)
+      setFollowing(data || [])
+    } catch (err) {
+      console.error('Failed to load following:', err)
+    }
+  }
 
-  const handleTabClick = (newTab) => setTab(newTab);
+  const handleTabClick = (newTab) => setTab(newTab)
 
-  if (error) return <p className={styles.error}>{error}</p>
-  if (!profile) return <p className={styles.loading}>Chargement du profil...</p>
+  if (loading) {
+    return <p className={styles.loading}>Loading profile...</p>
+  }
+
+  if (!profile) {
+    return null
+  }
 
   return (
     <main className={styles.main}>
       <button onClick={() => router.push('/home')} className={styles.backButton}>
-        ← Retour à l'accueil
+        ← Back to home
       </button>
 
       <div className={styles.profileContainer}>
         <h1 className={styles.profileTitle}>
-          Profil de {profile.first_name} {profile.last_name}
+          {profile.first_name} {profile.last_name}'s Profile
         </h1>
 
         <div className={styles.profileCard}>
@@ -101,16 +113,16 @@ export default function PublicProfilePage() {
               profile.avatar
                 ? profile.avatar.startsWith('http')
                   ? profile.avatar
-                  : `http://localhost:8080/${profile.avatar}`
+                  : `${API_BASE_URL}/${profile.avatar}`
                 : '/avatar.png'
             }
             alt="Avatar"
             className={styles.avatar}
           />
-          <p><strong className={styles.label}>Nom d'utilisateur :</strong> {profile.first_name} {profile.last_name}</p>
-          <p><strong className={styles.label}>Email :</strong> {profile.email}</p>
-          <p><strong className={styles.label}>À propos :</strong> {profile.about || 'N/A'}</p>
-          <p><strong className={styles.label}>Date de naissance :</strong> {profile.date_of_birth}</p>
+          <p><strong className={styles.label}>Username:</strong> {profile.first_name} {profile.last_name}</p>
+          <p><strong className={styles.label}>Email:</strong> {profile.email}</p>
+          <p><strong className={styles.label}>About:</strong> {profile.about || 'N/A'}</p>
+          <p><strong className={styles.label}>Date of Birth:</strong> {profile.date_of_birth}</p>
 
           {!profile.is_owner && (
             <div className={styles.followSection}>
@@ -134,25 +146,25 @@ export default function PublicProfilePage() {
             onClick={() => handleTabClick('posts')}
             className={`${styles.tab} ${tab === 'posts' ? styles.activeTab : ''}`}
           >
-            Publications
+            Posts
           </button>
           <button
             onClick={() => handleTabClick('followers')}
             className={`${styles.tab} ${tab === 'followers' ? styles.activeTab : ''}`}
           >
-            Abonnés
+            Followers
           </button>
           <button
             onClick={() => handleTabClick('following')}
             className={`${styles.tab} ${tab === 'following' ? styles.activeTab : ''}`}
           >
-            Abonnements
+            Following
           </button>
         </div>
 
         {tab === 'posts' && (
-          posts === null ? (
-            <p className={styles.subText}>Aucune publication pour le moment.</p>
+          posts.length === 0 ? (
+            <p className={styles.subText}>No posts yet.</p>
           ) : (
             <div className={styles.postList}>
               {posts.map(post => (
@@ -163,7 +175,7 @@ export default function PublicProfilePage() {
                   <p className={styles.postContent}>{post.content}</p>
                   {post.image_url && (
                     <img
-                      src={post.image_url.startsWith('http') ? post.image_url : `http://localhost:8080${post.image_url}`}
+                      src={post.image_url.startsWith('http') ? post.image_url : `${API_BASE_URL}${post.image_url}`}
                       alt="Post"
                       className={styles.postImage}
                     />
@@ -176,8 +188,8 @@ export default function PublicProfilePage() {
 
         {tab === 'followers' && (
           <div className={styles.userList}>
-            {followers === null ? (
-              <p className={styles.subText}>Aucun abonné pour l'instant.</p>
+            {followers.length === 0 ? (
+              <p className={styles.subText}>No followers yet.</p>
             ) : (
               followers.map(user => (
                 <div
@@ -186,7 +198,7 @@ export default function PublicProfilePage() {
                   onClick={() => router.push(`/profile/${user.ID}`)}
                 >
                   <img
-                    src={user.Avatar ? `http://localhost:8080/${user.Avatar}` : '/avatar.png'}
+                    src={user.Avatar ? `${API_BASE_URL}/${user.Avatar}` : '/avatar.png'}
                     className={styles.userAvatar}
                     alt="avatar"
                   />
@@ -202,8 +214,8 @@ export default function PublicProfilePage() {
 
         {tab === 'following' && (
           <div className={styles.userList}>
-            {following === null ? (
-              <p className={styles.subText}>Cet utilisateur ne suit personne.</p>
+            {following.length === 0 ? (
+              <p className={styles.subText}>Not following anyone yet.</p>
             ) : (
               following.map(user => (
                 <div
@@ -212,7 +224,7 @@ export default function PublicProfilePage() {
                   onClick={() => router.push(`/profile/${user.ID}`)}
                 >
                   <img
-                    src={user.Avatar ? `http://localhost:8080/${user.Avatar}` : '/avatar.png'}
+                    src={user.Avatar ? `${API_BASE_URL}/${user.Avatar}` : '/avatar.png'}
                     className={styles.userAvatar}
                     alt="avatar"
                   />
@@ -231,66 +243,60 @@ export default function PublicProfilePage() {
 }
 
 function FollowButton({ profile, currentUser, onFollowChange }) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleFollow = async () => {
-    if (!currentUser?.ID || isLoading) return;
-    setIsLoading(true);
+    if (!currentUser?.ID || isLoading) return
+    setIsLoading(true)
+
     try {
-      const res = await fetch('http://localhost:8080/api/follow', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ followed_id: profile.id }),
+      await followApi.send(profile.id)
+      onFollowChange({
+        is_followed: !profile.is_private,
+        is_pending: profile.is_private
       })
-      if (res.ok) {
-        onFollowChange({
-          is_followed: !profile.is_private,
-          is_pending: profile.is_private
-        });
-      }
+      toast.success(profile.is_private ? 'Follow request sent' : 'Now following')
+    } catch (err) {
+      toast.error('Failed to follow')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleUnfollow = async () => {
-    if (!currentUser?.ID || isLoading) return;
-    setIsLoading(true);
+    if (!currentUser?.ID || isLoading) return
+    setIsLoading(true)
+
     try {
-      const res = await fetch('http://localhost:8080/api/unfollow', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ followed_id: profile.id }),
-      })
-      if (res.ok) {
-        onFollowChange({ is_followed: false, is_pending: false });
-      }
+      await followApi.unfollow(profile.id)
+      onFollowChange({ is_followed: false, is_pending: false })
+      toast.success('Unfollowed successfully')
+    } catch (err) {
+      toast.error('Failed to unfollow')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   if (profile.is_followed) {
     return (
       <button onClick={handleUnfollow} disabled={isLoading} className={styles.unfollowBtn}>
-        {isLoading ? 'Chargement...' : 'Se désabonner'}
+        {isLoading ? 'Loading...' : 'Unfollow'}
       </button>
-    );
+    )
   }
 
   if (profile.is_pending) {
     return (
       <button disabled className={styles.pendingBtn}>
-        En attente d'approbation
+        Pending approval
       </button>
-    );
+    )
   }
 
   return (
     <button onClick={handleFollow} disabled={isLoading} className={styles.followBtn}>
-      {isLoading ? 'Chargement...' : profile.is_private ? 'Demander à suivre' : 'Suivre'}
+      {isLoading ? 'Loading...' : profile.is_private ? 'Request to follow' : 'Follow'}
     </button>
-  );
+  )
 }

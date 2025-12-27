@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
+import { groupsApi } from '../../../../lib/api'
+import toast from 'react-hot-toast'
 import PostForm from '../../../home/components/PostForm'
 import styles from './PostsTab.module.css'
 import Image from 'next/image'
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export default function PostsTab({ group, showPostForm, setShowPostForm }) {
   const [posts, setPosts] = useState([])
@@ -9,26 +13,23 @@ export default function PostsTab({ group, showPostForm, setShowPostForm }) {
   const [commentInputs, setCommentInputs] = useState({})
   const [loadingComments, setLoadingComments] = useState({})
   const [postingComment, setPostingComment] = useState({})
-  const [loadingPosts, setLoadingPosts] = useState(true) // NEW: Loading state for posts
+  const [loadingPosts, setLoadingPosts] = useState(true)
 
   useEffect(() => {
     const fetchPosts = async () => {
-      setLoadingPosts(true) // NEW: Start loading
+      setLoadingPosts(true)
       try {
-        const res = await fetch(`http://localhost:8080/api/groups/${group.id}/posts`, {
-          credentials: 'include'
-        })
-        if (!res.ok) throw new Error('Failed to fetch posts')
-        const data = await res.json()
+        const data = await groupsApi.getPosts(group.id)
         setPosts(data || [])
-        
+
         if (data?.length) {
           data.forEach(post => fetchComments(post.id))
         }
       } catch (err) {
         console.error('Failed to fetch posts', err)
+        toast.error('Failed to load posts')
       } finally {
-        setLoadingPosts(false) // NEW: Stop loading
+        setLoadingPosts(false)
       }
     }
 
@@ -38,19 +39,18 @@ export default function PostsTab({ group, showPostForm, setShowPostForm }) {
   const fetchComments = async (postId) => {
     try {
       setLoadingComments(prev => ({ ...prev, [postId]: true }))
-      const res = await fetch(`http://localhost:8080/api/groups/${group.id}/posts/${postId}/comments`, {
-        credentials: 'include'
-      })
-
-      if (!res.ok) throw new Error('Failed to fetch comments')
-
-      const data = await res.json()
+      const data = await groupsApi.getComments(group.id, postId)
       setComments(prev => ({
         ...prev,
         [postId]: data || []
       }))
     } catch (err) {
       console.error('Failed to fetch comments', err)
+      // Silencieux si pas de commentaires
+      setComments(prev => ({
+        ...prev,
+        [postId]: []
+      }))
     } finally {
       setLoadingComments(prev => ({ ...prev, [postId]: false }))
     }
@@ -63,28 +63,24 @@ export default function PostsTab({ group, showPostForm, setShowPostForm }) {
     try {
       setPostingComment(prev => ({ ...prev, [postId]: true }))
 
-      const res = await fetch(`http://localhost:8080/api/groups/${group.id}/posts/${postId}/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ content }),
-        credentials: 'include'
-      })
+      const formData = new FormData()
+      formData.append('content', content)
+      formData.append('post_id', postId)
 
-      if (!res.ok) throw new Error('Failed to post comment')
+      await groupsApi.createComment(group.id, postId, formData)
 
-      const newComment = await res.json()
-      setComments(prev => ({
-        ...prev,
-        [postId]: [...(prev[postId] || []), newComment]
-      }))
+      // ✅ Re-fetch les commentaires au lieu de les ajouter manuellement
+      // Cela garantit qu'on a les données du serveur
+      await fetchComments(postId)
+
       setCommentInputs(prev => ({
         ...prev,
         [postId]: ''
       }))
+      toast.success('Comment posted!')
     } catch (err) {
       console.error('Error posting comment:', err)
+      toast.error('Failed to post comment')
     } finally {
       setPostingComment(prev => ({ ...prev, [postId]: false }))
     }
@@ -107,7 +103,7 @@ export default function PostsTab({ group, showPostForm, setShowPostForm }) {
           </div>
         ) : posts.length > 0 ? (
           posts.map(post => (
-            <PostItem 
+            <PostItem
               key={post.id}
               post={post}
               comments={comments}
@@ -133,7 +129,7 @@ export default function PostsTab({ group, showPostForm, setShowPostForm }) {
 function PostItem({ post, comments, loadingComments, commentInputs, postingComment, onCommentChange, onCommentSubmit }) {
   const [showFullContent, setShowFullContent] = useState(false)
   const maxContentLength = 300
-  
+
   // Format the date nicely
   const formatDate = (dateString) => {
     const date = new Date(dateString)
@@ -142,7 +138,7 @@ function PostItem({ post, comments, loadingComments, commentInputs, postingComme
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
-    
+
     if (diffMins < 1) return 'Just now'
     if (diffMins < 60) return `${diffMins}m ago`
     if (diffHours < 24) return `${diffHours}h ago`
@@ -160,8 +156,8 @@ function PostItem({ post, comments, loadingComments, commentInputs, postingComme
 
   // Check if content needs truncation
   const needsTruncation = post.content?.length > maxContentLength
-  const displayContent = showFullContent 
-    ? post.content 
+  const displayContent = showFullContent
+    ? post.content
     : (needsTruncation ? `${post.content.substring(0, maxContentLength)}...` : post.content)
 
   return (
@@ -170,9 +166,9 @@ function PostItem({ post, comments, loadingComments, commentInputs, postingComme
         <div className={styles.authorInfo}>
           {post.author_avatar ? (
             <div className={styles.avatarContainer}>
-              <img 
-                src={post.author_avatar} 
-                alt={getDisplayName()} 
+              <img
+                src={post.author_avatar}
+                alt={getDisplayName()}
                 className={styles.postAuthorAvatar}
                 onError={(e) => {
                   e.target.onerror = null
@@ -212,7 +208,7 @@ function PostItem({ post, comments, loadingComments, commentInputs, postingComme
         <p className={styles.postContent}>
           {displayContent}
           {needsTruncation && !showFullContent && (
-            <button 
+            <button
               onClick={() => setShowFullContent(true)}
               className={styles.readMoreButton}
             >
@@ -220,7 +216,7 @@ function PostItem({ post, comments, loadingComments, commentInputs, postingComme
             </button>
           )}
           {needsTruncation && showFullContent && (
-            <button 
+            <button
               onClick={() => setShowFullContent(false)}
               className={styles.readMoreButton}
             >
@@ -228,11 +224,11 @@ function PostItem({ post, comments, loadingComments, commentInputs, postingComme
             </button>
           )}
         </p>
-        
+
         {post.image && (
           <div className={styles.imageContainer}>
             <img
-              src={`${post.image}`}
+              src={post.image.startsWith('http') ? post.image : `${API_BASE_URL}${post.image}`}
               alt="Post"
               className={styles.postImage}
               loading="lazy"
@@ -248,115 +244,83 @@ function PostItem({ post, comments, loadingComments, commentInputs, postingComme
       <div className={styles.postStats}>
         <span className={styles.statItem}>
           <span className={styles.statIcon}>💬</span>
-          <span className={styles.statCount}>{comments[post.id]?.length || 0}</span>
+          <span className={styles.statText}>
+            {comments[post.id]?.length || 0} {comments[post.id]?.length === 1 ? 'comment' : 'comments'}
+          </span>
         </span>
       </div>
 
       <div className={styles.commentsSection}>
         {loadingComments[post.id] ? (
           <div className={styles.loadingComments}>
-            <div className={styles.commentSpinner}></div>
+            <span className={styles.miniSpinner}></span>
             Loading comments...
           </div>
         ) : (
-          <div className={styles.commentsList}>
-            {comments[post.id]?.slice(0, 3).map(comment => (
-              <CommentItem key={comment.id} comment={comment} formatDate={formatDate} />
+          <>
+            {comments[post.id]?.map(comment => (
+              <div key={comment.id} className={styles.commentItem}>
+                <div className={styles.commentHeader}>
+                  {comment.author_avatar ? (
+                    <img
+                      src={comment.author_avatar}
+                      alt={comment.author_name || 'User'}
+                      className={styles.commentAvatar}
+                      onError={(e) => {
+                        e.target.onerror = null
+                        e.target.src = '/default-avatar.png'
+                      }}
+                    />
+                  ) : (
+                    <div className={styles.commentAvatarPlaceholder}>
+                      {(comment.author_name || 'U').charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className={styles.commentContent}>
+                    <div className={styles.commentAuthorRow}>
+                      <p className={styles.commentAuthor}>
+                        {comment.author_name || comment.author_username || 'Group Member'}
+                      </p>
+                      <span className={styles.commentDate}>{formatDate(comment.created_at)}</span>
+                    </div>
+                    <p className={styles.commentText}>{comment.content}</p>
+                  </div>
+                </div>
+              </div>
             ))}
-            
-            {comments[post.id]?.length > 3 && (
-              <button className={styles.viewMoreComments}>
-                View {comments[post.id].length - 3} more comments
-              </button>
-            )}
-          </div>
+          </>
         )}
 
-        <CommentInput 
-          value={commentInputs[post.id] || ''}
-          onChange={(e) => onCommentChange(e.target.value)}
-          onSubmit={onCommentSubmit}
-          disabled={postingComment[post.id]}
-          posting={postingComment[post.id]}
-          placeholder={`Comment as ${getDisplayName()}...`}
-        />
-      </div>
-    </div>
-  )
-}
-
-function CommentItem({ comment, formatDate }) {
-  const getCommentAuthorName = () => {
-    if (comment.author_name) return comment.author_name
-    if (comment.author_username) return comment.author_username
-    if (comment.author_full_name) return comment.author_full_name
-    return 'Commenter'
-  }
-
-  return (
-    <div className={styles.commentItem}>
-      <div className={styles.commentHeader}>
-        {comment.author_avatar ? (
-          <img 
-            src={comment.author_avatar} 
-            alt={getCommentAuthorName()} 
-            className={styles.commentAvatar}
-            onError={(e) => {
-              e.target.onerror = null
-              e.target.src = '/default-avatar.png'
+        <div className={styles.commentInputContainer}>
+          <input
+            type="text"
+            placeholder="Write a comment..."
+            value={commentInputs[post.id] || ''}
+            onChange={(e) => onCommentChange(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && !postingComment[post.id]) {
+                onCommentSubmit()
+              }
             }}
+            disabled={postingComment[post.id]}
+            className={styles.commentInput}
           />
-        ) : (
-          <div className={styles.commentAvatarPlaceholder}>
-            {getCommentAuthorName().charAt(0).toUpperCase()}
-          </div>
-        )}
-        <div className={styles.commentAuthorInfo}>
-          <p className={styles.commentAuthorName}>
-            {getCommentAuthorName()}
-            {comment.is_group_admin && (
-              <span className={styles.commentAdminBadge} title="Group Admin">👑</span>
+          <button
+            onClick={onCommentSubmit}
+            disabled={!commentInputs[post.id]?.trim() || postingComment[post.id]}
+            className={styles.commentButton}
+          >
+            {postingComment[post.id] ? (
+              <>
+                <span className={styles.miniSpinner}></span>
+                Posting...
+              </>
+            ) : (
+              'Post'
             )}
-          </p>
-          <p className={styles.commentDate}>{formatDate(comment.created_at)}</p>
+          </button>
         </div>
       </div>
-      <p className={styles.commentContent}>{comment.content}</p>
-    </div>
-  )
-}
-
-function CommentInput({ value, onChange, onSubmit, disabled, posting, placeholder }) {
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      onSubmit()
-    }
-  }
-
-  return (
-    <div className={styles.commentInputContainer}>
-      <input
-        type="text"
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        onKeyPress={handleKeyPress}
-        className={styles.commentInput}
-        disabled={disabled}
-      />
-      <button
-        onClick={onSubmit}
-        disabled={disabled || !value.trim()}
-        className={styles.commentButton}
-      >
-        {posting ? (
-          <>
-            <span className={styles.postingSpinner}></span>
-            Posting...
-          </>
-        ) : 'Post'}
-      </button>
     </div>
   )
 }
