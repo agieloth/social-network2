@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -15,7 +16,8 @@ var DB *sql.DB
 
 func InitDB() {
 	var err error
-	DB, err = sql.Open("sqlite3", "./social.db?charset=utf8")
+	os.MkdirAll("./data", 0755)
+	DB, err = sql.Open("sqlite3", "./data/social.db?charset=utf8")
 	if err != nil {
 		log.Fatal("Failed to open DB:", err)
 	}

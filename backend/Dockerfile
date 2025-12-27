@@ -1,5 +1,5 @@
 # Dockerfile pour Backend Go
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 # Installer les dépendances nécessaires
 RUN apk add --no-cache git gcc musl-dev sqlite-dev
@@ -29,6 +29,9 @@ WORKDIR /root/
 
 # Copier le binaire depuis le builder
 COPY --from=builder /app/main .
+
+# ⬇️ NOUVEAU: Copier les migrations
+COPY --from=builder /app/db ./db
 
 # Créer les dossiers nécessaires
 RUN mkdir -p uploads/avatars uploads/posts uploads/group_posts
