@@ -3,8 +3,10 @@
 
 // export default nextConfig;
 
-// next.config.mjs
 export default {
+  // Pour Docker
+  output: 'standalone',
+  
   async rewrites() {
     return [
       {

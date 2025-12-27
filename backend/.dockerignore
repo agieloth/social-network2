@@ -1,0 +1,44 @@
+# Backend .dockerignore
+
+# Base de données (sera créée dans le conteneur)
+*.db
+*.db-shm
+*.db-wal
+
+# Fichiers Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Dossiers de build
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Uploads (seront créés dans le conteneur)
+uploads/

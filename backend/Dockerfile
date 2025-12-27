@@ -1,20 +1,40 @@
-FROM golang:1.22
+# Dockerfile pour Backend Go
+FROM golang:1.21-alpine AS builder
 
+# Installer les dépendances nécessaires
+RUN apk add --no-cache git gcc musl-dev sqlite-dev
+
+# Définir le répertoire de travail
 WORKDIR /app
 
-# Install sqlite dev headers required for CGO (mattn/go-sqlite3)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libc6-dev libsqlite3-dev ca-certificates && rm -rf /var/lib/apt/lists/*
-
+# Copier go.mod et go.sum
 COPY go.mod go.sum ./
+
+# Télécharger les dépendances
 RUN go mod download
 
+# Copier tout le code source
 COPY . .
 
-# Build the server binary with CGO enabled (sqlite3 driver needs it)
-ENV CGO_ENABLED=1
-RUN go build -o /social
+# Compiler l'application
+RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o main .
 
+# Stage 2: Image finale légère
+FROM alpine:latest
+
+# Installer les dépendances runtime
+RUN apk --no-cache add ca-certificates sqlite-libs
+
+WORKDIR /root/
+
+# Copier le binaire depuis le builder
+COPY --from=builder /app/main .
+
+# Créer les dossiers nécessaires
+RUN mkdir -p uploads/avatars uploads/posts uploads/group_posts
+
+# Exposer le port
 EXPOSE 8080
 
-CMD ["/social"]
+# Lancer l'application
+CMD ["./main"]
