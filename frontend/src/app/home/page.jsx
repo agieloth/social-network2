@@ -38,7 +38,7 @@ export default function HomePage() {
 
   // Use global chat context
   const globalChat = useChat();
-  
+
   const removeNotificationCallback = useRef(null);
 
   // --- Worker related ---
@@ -73,7 +73,7 @@ export default function HomePage() {
     if ('Notification' in window && Notification.permission === 'granted' && !isWindowFocused) {
       // Ensure sender has a valid name
       const senderName = sender?.full_name || sender?.username || sender?.name || `User ${sender?.id || sender?.ID || '?'}`;
-      
+
       const notification = new Notification(`New message from ${senderName}`, {
         body: message.content,
         icon: sender?.avatar || '/default-avatar.png',
@@ -96,7 +96,7 @@ export default function HomePage() {
     console.log(messageData, "nothing just test")
     const senderId = messageData.from;
     let sender = globalChat.chatUsers.find(u => (u.id || u.ID) === senderId);
-    
+
     // If sender not found in chatUsers, create a basic object with the data we have
     if (!sender) {
       sender = {
@@ -151,10 +151,10 @@ export default function HomePage() {
     // Handle incoming PRIVATE messages only (show toast notification)
     if (data && (type === "private" || data.type === "private")) {
       console.log('Processing private chat message in home');
-      
+
       // Add message to global chat context
       globalChat.addMessageForRecipient(data);
-      
+
       // Check if message is from another user (not sent by current user)
       if (data.from !== user?.ID) {
         handleIncomingMessage(data);
@@ -183,7 +183,7 @@ export default function HomePage() {
 
   useEffect(() => {
     let activeWorker = workerRef.current;
-    
+
     // If no worker yet, create one locally
     if (!activeWorker && user?.ID) {
       console.log("🔧 Creating Worker in home/page.jsx for user:", user.ID);
@@ -332,7 +332,11 @@ export default function HomePage() {
       const res = await fetch("http://localhost:8080/api/chat-users", {
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to fetch users");
+      if (!res.ok) {
+        console.error("Failed to fetch users");
+        return;
+
+      }
       const data = await res.json();
       globalChat.setChatUsers(data);
     } catch (err) {
@@ -346,7 +350,11 @@ export default function HomePage() {
         credentials: "include",
       });
 
-      if (!res.ok) throw new Error("Unauthorized");
+      if (!res.ok) {
+        console.error("Unauthorized - Redirecting to login");
+        router.push("/login");
+        return;
+      }
 
       const data = await res.json();
       setUser(data);
@@ -360,7 +368,7 @@ export default function HomePage() {
     setLoading(true);
     fetch("http://localhost:8080/api/posts", { credentials: "include" })
       .then((res) => res.json())
-      .then((data) => setPosts(data))
+      .then((data) => setPosts(Array.isArray(data) ? data : []))
       .catch((err) => console.error("Error fetching posts:", err))
       .finally(() => setLoading(false));
   };
@@ -518,7 +526,7 @@ export default function HomePage() {
       </div>
 
       <h2 className={styles.postsHeading}></h2>
-      {posts === null ? (
+      {!Array.isArray(posts) || posts.length === 0 ? (
         <p className={styles.noPosts}>Aucun post à afficher.</p>
       ) : (
         posts.map(post => (
