@@ -16,13 +16,18 @@ export function WorkerInitializer() {
     // Only create worker once and keep it alive
     if (!worker && user?.ID) {
       console.log('🔧 WorkerInitializer: Creating persistent Worker for user:', user.ID)
-      
+
       const newWorker = new Worker('/worker.js')
-      
-      // Initialize worker with userId
-      newWorker.postMessage({ type: 'INIT', userId: user.ID })
-      console.log('📨 WorkerInitializer: INIT message sent to Worker')
-      
+
+      // Initialize worker with userId AND WebSocket URL
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080/ws'
+      newWorker.postMessage({
+        type: 'INIT',
+        userId: user.ID,
+        wsUrl: wsUrl
+      })
+      console.log('📨 WorkerInitializer: INIT message sent to Worker with WS URL:', wsUrl)
+
       setWorker(newWorker)
 
       // attach a centralized message handler to update global notifications

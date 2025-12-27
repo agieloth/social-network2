@@ -10,6 +10,8 @@ const maxReconnectAttempts = 10;
 let reconnectInterval = null;
 let isManuallyDisconnected = false;
 
+let wsUrl = 'ws://localhost:8080/ws'; // Default URL
+
 function connectWebSocket() {
   if (reconnectInterval) {
     clearInterval(reconnectInterval);
@@ -22,7 +24,8 @@ function connectWebSocket() {
   }
 
   console.log("🔌 Attempting WebSocket connection for user:", userId);
-  socket = new WebSocket(`ws://localhost:8080/ws?userId=${encodeURIComponent(userId)}`);
+  console.log("🔌 Using WebSocket URL:", wsUrl);
+  socket = new WebSocket(`${wsUrl}?userId=${encodeURIComponent(userId)}`);
 
   socket.onopen = () => {
     reconnectAttempts = 0;
@@ -103,6 +106,13 @@ onmessage = function (event) {
     case "INIT":
       console.log("🔑 INIT message received with userId:", data.userId);
       userId = data.userId;
+      
+      // ✅ NOUVEAU : Mettre à jour l'URL WebSocket si fournie
+      if (data.wsUrl) {
+        wsUrl = data.wsUrl;
+        console.log("🔌 WebSocket URL updated to:", wsUrl);
+      }
+      
       isManuallyDisconnected = false;
       
       if (!socket || !isConnected) {
