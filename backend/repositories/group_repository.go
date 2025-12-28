@@ -778,7 +778,6 @@ func (r *GroupRepository) GetUserNickname(userID int) (string, error) {
 }
 
 
-
 // IsUserMemberOfGroup vérifie si un utilisateur est un membre accepté du groupe OU le créateur
 func (r *GroupRepository) IsUserMemberOfGroup(groupID, userID int) (bool, error) {
 	// Vérifier si l'utilisateur est le créateur du groupe

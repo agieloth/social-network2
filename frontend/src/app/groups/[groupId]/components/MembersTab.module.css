@@ -1,23 +1,63 @@
+/* ===== HEADER ROW (Nouveau) ===== */
+.headerRow {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+/* ===== BUTTONS ===== */
 .inviteButton {
-  width: 100%;
+  flex: 1;
   padding: 0.5rem 1rem;
   background-color: #2563eb;
   color: white;
   border-radius: 0.5rem;
   transition: background-color 0.2s;
-  margin-bottom: 1rem;
   cursor: pointer;
+  font-weight: 500;
+  border: none;
 }
 
-.inviteButton:hover {
+.inviteButton:hover:not(:disabled) {
   background-color: #1d4ed8;
 }
 
+.inviteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refreshButton {
+  padding: 0.5rem 1rem;
+  background-color: rgba(55, 65, 81, 0.8);
+  color: white;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  font-weight: 500;
+  border: 1px solid rgba(75, 85, 99, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.refreshButton:hover:not(:disabled) {
+  background-color: rgba(75, 85, 99, 0.9);
+  border-color: rgba(100, 116, 139, 0.7);
+}
+
+.refreshButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== CONTAINER ===== */
 .membersContainer {
   background-color: rgba(31, 41, 55, 0.5);
-  border-radius: 0.5rem;
-  padding: 1rem;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
   border: 1px solid rgba(55, 65, 81, 0.5);
+  backdrop-filter: blur(10px);
 }
 
 .title {
@@ -27,25 +67,39 @@
   margin-bottom: 1rem;
 }
 
+/* ===== LOADING STATE ===== */
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+/* ===== MEMBERS LIST ===== */
 .membersList {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.noMembersText {
-  color: #9ca3af;
-}
-
 .memberItem {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem;
-  background-color: rgba(55, 65, 81, 0.3);
+  padding: 0.875rem;
+  background-color: rgba(55, 65, 81, 0.4);
   border-radius: 0.5rem;
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  transition: all 0.2s;
 }
 
+.memberItem:hover {
+  background-color: rgba(55, 65, 81, 0.6);
+  border-color: rgba(100, 116, 139, 0.5);
+  transform: translateY(-1px);
+}
+
+/* ===== AVATAR ===== */
 .avatar {
   width: 50px;
   height: 50px;
@@ -57,8 +111,8 @@
   color: white;
   font-weight: bold;
   overflow: hidden;
-  margin-right: 15px;
   flex-shrink: 0;
+  border: 2px solid rgba(59, 130, 246, 0.3);
 }
 
 .avatarImage {
@@ -67,57 +121,55 @@
   object-fit: cover;
 }
 
+.avatarFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* ===== MEMBER INFO ===== */
 .memberInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .memberName {
   font-weight: 600;
-  margin-bottom: 5px;
   color: white;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .memberDetails {
   font-size: 0.75rem;
   color: #9ca3af;
+  margin: 0;
 }
 
 .adminBadge {
-  margin-left: 0.5rem;
   background-color: rgba(147, 51, 234, 0.3);
   color: #c4b5fd;
   padding: 0.125rem 0.5rem;
   border-radius: 0.25rem;
   font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
 }
 
+/* ===== EMPTY STATE ===== */
 .noMembersText {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-  font-style: italic;
-}
-
-.headerRow {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.refreshButton {
-  padding: 0.5rem 1rem;
-  background-color: rgba(55, 65, 81, 0.8);
-  /* ... */
-}
-
-.loading {
   text-align: center;
   padding: 2rem;
   color: #9ca3af;
-}
-
-.avatarImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  font-style: italic;
+  font-size: 0.9rem;
 }
