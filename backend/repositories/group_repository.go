@@ -600,9 +600,16 @@ func (r *GroupRepository) SetEventResponse(eventID, userID int, response string)
     return nil
 }
 
+// ========================================
+// CORRECTION : GetGroupMembers - Sans duplication
+// ========================================
+// 📄 Fichier : backend/repositories/group_repository.go
+// 📍 Remplacer la fonction GetGroupMembers (lignes ~560-600)
+// 🎯 Correction : Utiliser une seule requête avec DISTINCT pour éviter la duplication
+
 func (r *GroupRepository) GetGroupMembers(groupID int) ([]models.GroupMember, error) {
     query := `
-        SELECT 
+        SELECT DISTINCT
             u.id,
             u.nickname,
             u.avatar,
@@ -610,25 +617,23 @@ func (r *GroupRepository) GetGroupMembers(groupID int) ([]models.GroupMember, er
                 WHEN g.creator_id = u.id THEN 'creator'
                 ELSE 'member'
             END as role,
-            gm.created_at as joined_at
-        FROM group_memberships gm
-        JOIN users u ON gm.user_id = u.id
-        JOIN groups g ON gm.group_id = g.id
-        WHERE gm.group_id = ? AND gm.status = 'accepted'
-        UNION
-        SELECT 
-            u.id,
-            u.nickname,
-            u.avatar,
-            'creator' as role,
-            g.created_at as joined_at
-        FROM groups g
-        JOIN users u ON g.creator_id = u.id
-        WHERE g.id = ?
-        ORDER BY role DESC, joined_at ASC
+            COALESCE(gm.created_at, g.created_at) as joined_at
+        FROM users u
+        JOIN groups g ON g.id = ?
+        LEFT JOIN group_memberships gm ON gm.user_id = u.id AND gm.group_id = g.id
+        WHERE (
+            -- Le créateur du groupe (toujours inclus)
+            u.id = g.creator_id
+            OR
+            -- Les membres acceptés qui ne sont pas le créateur
+            (gm.status = 'accepted' AND u.id != g.creator_id)
+        )
+        ORDER BY 
+            CASE WHEN g.creator_id = u.id THEN 0 ELSE 1 END,  -- Créateur en premier
+            joined_at ASC
     `
 
-    rows, err := r.db.Query(query, groupID, groupID)
+    rows, err := r.db.Query(query, groupID)
     if err != nil {
         return nil, fmt.Errorf("failed to query group members: %w", err)
     }
