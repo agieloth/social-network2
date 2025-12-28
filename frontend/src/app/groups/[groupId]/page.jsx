@@ -15,10 +15,8 @@ import InviteModal from './components/InviteModal'
 import PendingRequests from '../components/PendingRequests'
 import JoinStatus from './components/JoinStatus'
 import styles from './GroupDetailPage.module.css'
-import { title } from 'process'
 
 export default function GroupDetailPage({ params }) {
-  // All hooks at the top (no conditional returns above this)
   const { groupId } = use(params)
   const [group, setGroup] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -31,11 +29,9 @@ export default function GroupDetailPage({ params }) {
   const [members, setMembers] = useState([])
   const [loadingMembers, setLoadingMembers] = useState(false)
 
-  // ⬇️ CORRECTION : Récupérer AUSSI le loading de Auth
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
 
-  // ⬇️ CORRECTION : Utiliser authLoading au lieu de loading local
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login')
@@ -70,6 +66,7 @@ export default function GroupDetailPage({ params }) {
         })
         if (!res.ok) throw new Error('Failed to fetch group')
         const data = await res.json()
+        console.log("🔍 Group loaded:", data)
         setGroup(data)
       } catch (err) {
         setError(err.message)
@@ -82,68 +79,80 @@ export default function GroupDetailPage({ params }) {
   }, [groupId])
 
   useEffect(() => {
-    // Ne charger les membres que quand on clique sur le tab "members"
-    if (activeTab === 'members' && group?.is_creator) {
-      const loadMembers = async () => {
-        setLoadingMembers(true);
-        try {
-          const res = await fetch(`http://localhost:8080/api/groups/${group.id}/members`, {
-            credentials: 'include'
-          });
+    console.log("🔍 activeTab changed:", activeTab)
+    console.log("🔍 Checking members load condition:", {
+      activeTab,
+      isMembersTab: activeTab === 'members',
+      is_member: group?.is_member,
+      is_creator: group?.is_creator,
+      shouldLoad: activeTab === 'members' && (group?.is_member || group?.is_creator)
+    })
 
+    if (activeTab === 'members' && (group?.is_member || group?.is_creator)) {
+      console.log("✅ Loading members...")
+      const loadMembers = async () => {
+        setLoadingMembers(true)
+        try {
+          const url = `http://localhost:8080/api/groups/${group.id}/members`
+          console.log("🔍 Fetching members from:", url)
+          
+          const res = await fetch(url, {
+            credentials: 'include'
+          })
+
+          console.log("🔍 Response status:", res.status)
+          
           if (res.ok) {
-            const data = await res.json();
-            setMembers(data);
+            const data = await res.json()
+            console.log("✅ Members loaded:", data)
+            setMembers(data)
+          } else {
+            console.error("❌ Failed to load members:", res.status, res.statusText)
           }
         } catch (err) {
-          console.error('Error loading members:', err);
+          console.error('❌ Error loading members:', err)
         } finally {
-          setLoadingMembers(false);
+          setLoadingMembers(false)
         }
-      };
+      }
 
-      loadMembers();
+      loadMembers()
     }
-  }, [activeTab, group?.id, group?.is_creator]);
+  }, [activeTab, group?.id, group?.is_member, group?.is_creator])
 
-  // Fonction séparée pour rafraîchir (appelée manuellement)
   const refreshMembers = async () => {
-    if (!group?.id) return;
+    if (!group?.id) return
 
-    setLoadingMembers(true);
+    console.log("🔄 Refreshing members...")
+    setLoadingMembers(true)
     try {
       const res = await fetch(`http://localhost:8080/api/groups/${group.id}/members`, {
         credentials: 'include'
-      });
+      })
 
       if (res.ok) {
-        const data = await res.json();
-        setMembers(data);
+        const data = await res.json()
+        console.log("✅ Members refreshed:", data)
+        setMembers(data)
       }
     } catch (err) {
-      console.error('Error refreshing members:', err);
+      console.error('Error refreshing members:', err)
     } finally {
-      setLoadingMembers(false);
+      setLoadingMembers(false)
     }
-  };
+  }
 
-  useEffect(() => {
-    if (group) {
-      console.log("Group debug:", {
-        id: group.id,
-        title: group.title,
-        is_member: group.is_member,
-        is_creator: group.is_creator,
-        is_pending: group.is_pending
-
-      });
-      
-    }
-  }, [group])
-
-  // ⬇️ CORRECTION : Vérifier authLoading OU loading local
   if (authLoading || loading || !user) return <LoadingState />
   if (error) return <ErrorState error={error} />
+
+  console.log("🔍 Rendering with:", {
+    activeTab,
+    group_is_member: group.is_member,
+    group_is_creator: group.is_creator,
+    showMembersTab: activeTab === 'members' && (group.is_member || group.is_creator),
+    membersCount: members.length,
+    loadingMembers
+  })
 
   return (
     <div className={styles.page}>
@@ -182,15 +191,37 @@ export default function GroupDetailPage({ params }) {
             </div>
           )}
 
-          {activeTab === 'members' && group.is_creator && (
-            <MembersTab
-              group={group}
-              members={members}
-              loading={loadingMembers}
-              showInviteForm={showInviteForm}
-              setShowInviteForm={setShowInviteForm}
-              onRefreshMembers={refreshMembers}
-            />
+          {/* 🔍 DEBUG : Afficher toujours pour tester */}
+          {activeTab === 'members' && (
+            <div>
+              <h3 style={{ color: 'yellow' }}>🔍 DEBUG INFO:</h3>
+              <pre style={{ color: 'white', background: 'black', padding: '10px' }}>
+                {JSON.stringify({
+                  is_member: group.is_member,
+                  is_creator: group.is_creator,
+                  condition: group.is_member || group.is_creator,
+                  membersCount: members.length,
+                  loadingMembers
+                }, null, 2)}
+              </pre>
+
+              {(group.is_member || group.is_creator) ? (
+                <>
+                  <p style={{ color: 'green' }}>✅ Condition OK - MembersTab should render</p>
+                  <MembersTab
+                    group={group}
+                    members={members}
+                    loading={loadingMembers}
+                    showInviteForm={showInviteForm}
+                    setShowInviteForm={setShowInviteForm}
+                    onRefreshMembers={refreshMembers}
+                    isCreator={group.is_creator}
+                  />
+                </>
+              ) : (
+                <p style={{ color: 'red' }}>❌ Condition FAILED - MembersTab will not render</p>
+              )}
+            </div>
           )}
         </div>
       </div>
