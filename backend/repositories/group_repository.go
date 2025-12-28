@@ -165,11 +165,19 @@ func (r *GroupRepository) GetNonGroupMembers(groupID, userID int) ([]map[string]
 	query := `
 		SELECT id, nickname FROM users
 		WHERE id NOT IN (
+			-- Exclure le créateur du groupe
+			SELECT creator_id FROM groups WHERE id = ?
+			UNION
+			-- Exclure tous les utilisateurs qui ont une relation avec le groupe
+			-- (membres acceptés, invitations en attente, demandes en attente)
 			SELECT user_id FROM group_memberships WHERE group_id = ?
+			UNION
+			-- Exclure l'utilisateur qui fait la requête
+			SELECT ?
 		)
-		AND id != ?`
+		ORDER BY nickname`
 
-	rows, err := r.db.Query(query, groupID, userID)
+	rows, err := r.db.Query(query, groupID, groupID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -771,6 +779,7 @@ func (r *GroupRepository) GetUserNickname(userID int) (string, error) {
 
 
 
+// IsUserMemberOfGroup vérifie si un utilisateur est un membre accepté du groupe OU le créateur
 func (r *GroupRepository) IsUserMemberOfGroup(groupID, userID int) (bool, error) {
 	// Vérifier si l'utilisateur est le créateur du groupe
 	var creatorID int
