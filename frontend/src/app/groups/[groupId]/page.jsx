@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { useRouter, redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { use } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import GroupHeader from './components/GroupHeader'
@@ -27,18 +27,19 @@ export default function GroupDetailPage({ params }) {
   const [showPostForm, setShowPostForm] = useState(false)
   const [showEventForm, setShowEventForm] = useState(false)
   const [showInviteForm, setShowInviteForm] = useState(false)
-  const [members, setMembers] = useState([]) // Ajoutez cet état
-  const [loadingMembers, setLoadingMembers] = useState(false) // Ajoutez cet état
+  const [members, setMembers] = useState([])
+  const [loadingMembers, setLoadingMembers] = useState(false)
 
-  const { user } = useAuth()
+  // ⬇️ CORRECTION : Récupérer AUSSI le loading de Auth
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
 
-  // Handle redirect in useEffect
+  // ⬇️ CORRECTION : Utiliser authLoading au lieu de loading local
   useEffect(() => {
-    if (!user && !loading) {
-      redirect("/login")
+    if (!authLoading && !user) {
+      router.push('/login')
     }
-  }, [user, loading])
+  }, [user, authLoading, router])
 
   const handleJoin = async (e) => {
     e.stopPropagation()
@@ -49,7 +50,9 @@ export default function GroupDetailPage({ params }) {
       })
       if (!res.ok) throw new Error('Failed to join group')
 
-      const refreshRes = await fetch(`http://localhost:8080/api/groups/${groupId}`)
+      const refreshRes = await fetch(`http://localhost:8080/api/groups/${groupId}`, {
+        credentials: 'include'
+      })
       if (refreshRes.ok) {
         setGroup(await refreshRes.json())
       }
@@ -62,7 +65,7 @@ export default function GroupDetailPage({ params }) {
     const fetchGroup = async () => {
       try {
         const res = await fetch(`http://localhost:8080/api/groups/${groupId}`, {
-          credentials: 'include' // 👈 AJOUTE CECI
+          credentials: 'include'
         })
         if (!res.ok) throw new Error('Failed to fetch group')
         const data = await res.json()
@@ -100,7 +103,7 @@ export default function GroupDetailPage({ params }) {
 
       loadMembers();
     }
-  }, [activeTab, group?.id, group?.is_creator]); // Seulement ces dépendances
+  }, [activeTab, group?.id, group?.is_creator]);
 
   // Fonction séparée pour rafraîchir (appelée manuellement)
   const refreshMembers = async () => {
@@ -123,9 +126,8 @@ export default function GroupDetailPage({ params }) {
     }
   };
 
-
-  // Only show loading/error states after auth check
-  if (loading || !user) return <LoadingState />
+  // ⬇️ CORRECTION : Vérifier authLoading OU loading local
+  if (authLoading || loading || !user) return <LoadingState />
   if (error) return <ErrorState error={error} />
 
   return (
@@ -167,11 +169,11 @@ export default function GroupDetailPage({ params }) {
           {activeTab === 'members' && group.is_creator && (
             <MembersTab
               group={group}
-              members={members} // Passez les membres récupérés
-              loading={loadingMembers} // Passez l'état de chargement
+              members={members}
+              loading={loadingMembers}
               showInviteForm={showInviteForm}
               setShowInviteForm={setShowInviteForm}
-              onRefreshMembers={refreshMembers} // Pour rafraîchir après une invitation
+              onRefreshMembers={refreshMembers}
             />
           )}
         </div>

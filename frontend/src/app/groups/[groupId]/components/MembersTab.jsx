@@ -1,4 +1,4 @@
-// MembersTab.jsx - Version simplifiée et corrigée
+// MembersTab.jsx - Version corrigée avec support isCreator
 import styles from './MembersTab.module.css'
 
 export default function MembersTab({ 
@@ -7,7 +7,8 @@ export default function MembersTab({
   loading, 
   showInviteForm, 
   setShowInviteForm,
-  onRefreshMembers 
+  onRefreshMembers,
+  isCreator  // ⬅️ NOUVEAU : pour futures fonctionnalités admin
 }) {
   // Pas de useEffect ici pour éviter les boucles
   // La rafraîchissement se fera manuellement ou via le parent
@@ -21,6 +22,7 @@ export default function MembersTab({
   return (
     <>
       <div className={styles.headerRow}>
+        {/* ⬇️ Bouton Invite visible pour TOUS les membres */}
         <button
           onClick={() => setShowInviteForm(true)}
           className={styles.inviteButton}
@@ -47,7 +49,11 @@ export default function MembersTab({
         ) : members && members.length > 0 ? (
           <div className={styles.membersList}>
             {members.map(member => (
-              <MemberItem key={`${member.id}-${member.role}`} member={member} />
+              <MemberItem 
+                key={`${member.id}-${member.role}`} 
+                member={member}
+                isCreator={isCreator}  // ⬅️ Passer pour futures actions admin
+              />
             ))}
           </div>
         ) : (
@@ -62,7 +68,7 @@ export default function MembersTab({
   )
 }
 
-function MemberItem({ member }) {
+function MemberItem({ member, isCreator }) {
   // Afficher correctement les informations
   const avatarUrl = member.avatar 
     ? (member.avatar.startsWith('http') 
@@ -104,6 +110,16 @@ function MemberItem({ member }) {
             : 'Unknown date'}
         </p>
       </div>
+      
+      {/* ⬇️ FUTUR : Bouton pour supprimer un membre (seulement pour admin) */}
+      {/* {isCreator && member.role !== 'creator' && (
+        <button 
+          onClick={() => handleRemoveMember(member.id)}
+          className={styles.removeButton}
+        >
+          Remove
+        </button>
+      )} */}
     </div>
   )
 }

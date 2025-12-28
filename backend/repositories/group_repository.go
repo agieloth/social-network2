@@ -768,3 +768,33 @@ func (r *GroupRepository) GetUserNickname(userID int) (string, error) {
     }
     return nickname, nil
 }
+
+
+
+func (r *GroupRepository) IsUserMemberOfGroup(groupID, userID int) (bool, error) {
+	// Vérifier si l'utilisateur est le créateur du groupe
+	var creatorID int
+	err := r.db.QueryRow(`SELECT creator_id FROM groups WHERE id = ?`, groupID).Scan(&creatorID)
+	if err != nil {
+		return false, err
+	}
+	
+	// Si c'est le créateur, retourner true
+	if creatorID == userID {
+		return true, nil
+	}
+	
+	// Sinon, vérifier si c'est un membre accepté
+	var count int
+	err = r.db.QueryRow(`
+		SELECT COUNT(*) 
+		FROM group_memberships 
+		WHERE group_id = ? AND user_id = ? AND status = 'accepted'
+	`, groupID, userID).Scan(&count)
+	
+	if err != nil {
+		return false, err
+	}
+	
+	return count > 0, nil
+}
