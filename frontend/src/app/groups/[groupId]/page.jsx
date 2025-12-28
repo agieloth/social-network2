@@ -15,6 +15,7 @@ import InviteModal from './components/InviteModal'
 import PendingRequests from '../components/PendingRequests'
 import JoinStatus from './components/JoinStatus'
 import styles from './GroupDetailPage.module.css'
+import { title } from 'process'
 
 export default function GroupDetailPage({ params }) {
   // All hooks at the top (no conditional returns above this)
@@ -126,6 +127,20 @@ export default function GroupDetailPage({ params }) {
     }
   };
 
+  useEffect(() => {
+    if (group) {
+      console.log("Group debug:", {
+        id: group.id,
+        title: group.title,
+        is_member: group.is_member,
+        is_creator: group.is_creator,
+        is_pending: group.is_pending
+
+      });
+      
+    }
+  }, [group])
+
   // ⬇️ CORRECTION : Vérifier authLoading OU loading local
   if (authLoading || loading || !user) return <LoadingState />
   if (error) return <ErrorState error={error} />
@@ -141,6 +156,7 @@ export default function GroupDetailPage({ params }) {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           isCreator={group.is_creator}
+          isMember={group.is_member}
         />
 
         <div className={styles.contentSpace}>
