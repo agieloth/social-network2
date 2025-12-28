@@ -222,7 +222,8 @@ func (h *MembershipHandler) ApproveRequest(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := h.Service.ApproveMembership(groupID, creatorID, req); err != nil {
+	// ⬇️ MODIFIÉ : Passer le hub pour invalider le cache
+	if err := h.Service.ApproveMembership(groupID, creatorID, req, h.Hub); err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

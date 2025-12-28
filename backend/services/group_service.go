@@ -18,6 +18,9 @@ var (
 type GroupService struct {
 	Repo *repositories.GroupRepository
 }
+type HubInterface interface {
+	InvalidateGroupMembersCache(groupID int)
+}
 
 func NewGroupService(Repo *repositories.GroupRepository) *GroupService {
 	return &GroupService{Repo: Repo}
@@ -166,7 +169,7 @@ func (s *GroupService) InviteUserToGroup(groupID int, senderID int, invite model
 	return notification, nil
 }
 
-func (s *GroupService) ApproveMembership(groupID int, creatorID int, body models.ApproveRequest) error {
+func (s *GroupService) ApproveMembership(groupID int, creatorID int, body models.ApproveRequest, hub HubInterface) error {
 	dbCreatorID, err := s.Repo.GetGroupCreatorID(groupID)
 	if err != nil {
 		return fmt.Errorf("group not found")
@@ -179,6 +182,12 @@ func (s *GroupService) ApproveMembership(groupID int, creatorID int, body models
 	err = s.Repo.ApproveMembershipRequest(groupID, body.UserID)
 	if err != nil {
 		return err
+	}
+
+	// ⬇️ NOUVEAU : Invalider le cache des membres du groupe
+	if hub != nil {
+		hub.InvalidateGroupMembersCache(groupID)
+		fmt.Printf("✅ Group %d cache invalidated after approving user %d\n", groupID, body.UserID)
 	}
 
 	return nil

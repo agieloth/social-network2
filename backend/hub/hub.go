@@ -227,3 +227,11 @@ func (h *Hub) WarmGroupMembersCache(groupID int) error {
 	h.groupMembersCache[groupID] = userIDs
 	return nil
 }
+
+func (h *Hub) InvalidateGroupMembersCache(groupID int) {
+	h.cacheMutex.Lock()
+	defer h.cacheMutex.Unlock()
+	
+	delete(h.groupMembersCache, groupID)
+	fmt.Printf("🔄 Cache invalidated for group %d\n", groupID)
+}
