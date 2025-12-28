@@ -97,3 +97,27 @@
   color: #666;
   font-style: italic;
 }
+
+.headerRow {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.refreshButton {
+  padding: 0.5rem 1rem;
+  background-color: rgba(55, 65, 81, 0.8);
+  /* ... */
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #9ca3af;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

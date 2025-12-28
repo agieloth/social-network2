@@ -110,16 +110,6 @@ function MemberItem({ member, isCreator }) {
             : 'Unknown date'}
         </p>
       </div>
-      
-      {/* ⬇️ FUTUR : Bouton pour supprimer un membre (seulement pour admin) */}
-      {/* {isCreator && member.role !== 'creator' && (
-        <button 
-          onClick={() => handleRemoveMember(member.id)}
-          className={styles.removeButton}
-        >
-          Remove
-        </button>
-      )} */}
     </div>
   )
 }

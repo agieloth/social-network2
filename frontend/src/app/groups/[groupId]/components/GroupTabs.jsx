@@ -10,7 +10,7 @@ export default function GroupTabs({ activeTab, setActiveTab, isCreator, isMember
         {/* ⬇️ Posts - Visible pour tous */}
         <button
           onClick={() => setActiveTab('posts')}
-          className={`${styles.tab} ${activeTab === 'posts' ? styles.active : ''}`}
+          className={`${styles.tabButton} ${activeTab === 'posts' ? styles.active : ''}`}
         >
           Posts
         </button>
@@ -18,7 +18,7 @@ export default function GroupTabs({ activeTab, setActiveTab, isCreator, isMember
         {/* ⬇️ Events - Visible pour tous */}
         <button
           onClick={() => setActiveTab('events')}
-          className={`${styles.tab} ${activeTab === 'events' ? styles.active : ''}`}
+          className={`${styles.tabButton} ${activeTab === 'events' ? styles.active : ''}`}
         >
           Events
         </button>
@@ -27,7 +27,7 @@ export default function GroupTabs({ activeTab, setActiveTab, isCreator, isMember
         {(isMember || isCreator) && (
           <button
             onClick={() => setActiveTab('members')}
-            className={`${styles.tab} ${activeTab === 'members' ? styles.active : ''}`}
+            className={`${styles.tabButton} ${activeTab === 'members' ? styles.active : ''}`}
           >
             Members
           </button>
@@ -37,7 +37,7 @@ export default function GroupTabs({ activeTab, setActiveTab, isCreator, isMember
         {isCreator && (
           <button
             onClick={() => setActiveTab('requests')}
-            className={`${styles.tab} ${activeTab === 'requests' ? styles.active : ''}`}
+            className={`${styles.tabButton} ${activeTab === 'requests' ? styles.active : ''}`}
           >
             Requests
           </button>
