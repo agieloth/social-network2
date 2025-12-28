@@ -600,74 +600,72 @@ func (r *GroupRepository) SetEventResponse(eventID, userID int, response string)
     return nil
 }
 
-// ========================================
-// CORRECTION : GetGroupMembers - Sans duplication
-// ========================================
-// 📄 Fichier : backend/repositories/group_repository.go
-// 📍 Remplacer la fonction GetGroupMembers (lignes ~560-600)
-// 🎯 Correction : Utiliser une seule requête avec DISTINCT pour éviter la duplication
-
 func (r *GroupRepository) GetGroupMembers(groupID int) ([]models.GroupMember, error) {
-    query := `
-        SELECT DISTINCT
-            u.id,
-            u.nickname,
-            u.avatar,
-            CASE 
-                WHEN g.creator_id = u.id THEN 'creator'
-                ELSE 'member'
-            END as role,
-            COALESCE(gm.created_at, g.created_at) as joined_at
-        FROM users u
-        JOIN groups g ON g.id = ?
-        LEFT JOIN group_memberships gm ON gm.user_id = u.id AND gm.group_id = g.id
-        WHERE (
-            -- Le créateur du groupe (toujours inclus)
-            u.id = g.creator_id
-            OR
-            -- Les membres acceptés qui ne sont pas le créateur
-            (gm.status = 'accepted' AND u.id != g.creator_id)
-        )
-        ORDER BY 
-            CASE WHEN g.creator_id = u.id THEN 0 ELSE 1 END,  -- Créateur en premier
-            joined_at ASC
-    `
+	query := `
+		SELECT DISTINCT
+			u.id,
+			u.nickname,
+			COALESCE(u.avatar, '') as avatar,
+			CASE 
+				WHEN g.creator_id = u.id THEN 'creator'
+				ELSE 'member'
+			END as role,
+			COALESCE(
+				datetime(gm.created_at),
+				datetime(g.created_at)
+			) as joined_at
+		FROM users u
+		CROSS JOIN groups g
+		LEFT JOIN group_memberships gm ON gm.user_id = u.id AND gm.group_id = g.id
+		WHERE g.id = ?
+		AND (
+			u.id = g.creator_id
+			OR
+			(gm.status = 'accepted' AND u.id != g.creator_id)
+		)
+		ORDER BY 
+			CASE WHEN g.creator_id = u.id THEN 0 ELSE 1 END,
+			joined_at ASC
+	`
 
-    rows, err := r.db.Query(query, groupID)
-    if err != nil {
-        return nil, fmt.Errorf("failed to query group members: %w", err)
-    }
-    defer rows.Close()
+	rows, err := r.db.Query(query, groupID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query group members: %w", err)
+	}
+	defer rows.Close()
 
-    var members []models.GroupMember
-    for rows.Next() {
-        var member models.GroupMember
-        var joinedAt time.Time
-        
-        err := rows.Scan(
-            &member.ID,
-            &member.Username,
-            &member.Avatar,
-            &member.Role,
-            &joinedAt,
-        )
-        if err != nil {
-            return nil, fmt.Errorf("failed to scan member row: %w", err)
-        }
-        
-        member.JoinedAt = joinedAt.Format(time.RFC3339)
-        if member.Avatar != "" {
-            member.Avatar = "http://localhost:8080/" + member.Avatar
-        }
-        
-        members = append(members, member)
-    }
+	var members []models.GroupMember
+	for rows.Next() {
+		var member models.GroupMember
+		var joinedAtStr string  // ⬅️ SCANNER EN STRING !
+		
+		err := rows.Scan(
+			&member.ID,
+			&member.Username,
+			&member.Avatar,
+			&member.Role,
+			&joinedAtStr,  // ⬅️ STRING, pas time.Time
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan member row: %w", err)
+		}
+		
+		// ⬇️ Convertir la string en format RFC3339 si nécessaire
+		member.JoinedAt = joinedAtStr
+		
+		// ⬇️ Ajouter le préfixe URL si l'avatar existe
+		if member.Avatar != "" {
+			member.Avatar = "http://localhost:8080/" + member.Avatar
+		}
+		
+		members = append(members, member)
+	}
 
-    if err := rows.Err(); err != nil {
-        return nil, fmt.Errorf("rows iteration error: %w", err)
-    }
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
+	}
 
-    return members, nil
+	return members, nil
 }
 
 func (r *GroupRepository) GroupExists(groupID int) (bool, error) {
